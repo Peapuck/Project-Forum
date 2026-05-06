@@ -1,9 +1,5 @@
-const AUTH_API_BASE = window.location.port === '8081'
-  ? `${window.location.origin}/api/auth`
-  : 'http://localhost:8081/api/auth';
-const FORUM_API_BASE = window.location.port === '8081'
-  ? `${window.location.origin}/api/forum`
-  : 'http://localhost:8081/api/forum';
+const AUTH_API_BASE = '/api/auth';
+const FORUM_API_BASE = '/api/forum';
 const PROFILE_AVATAR_SIZE = 320;
 const DEFAULT_AVATAR = 'https://via.placeholder.com/320x320/202020/f0f0f0?text=U';
 

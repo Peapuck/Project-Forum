@@ -1,6 +1,6 @@
 const { useEffect, useMemo, useRef, useState } = React;
 
-const API_BASE = window.location.port === '8081' ? `${window.location.origin}/api` : 'http://localhost:8081/api';
+const API_BASE = '/api';
 const DEFAULT_AVATAR = 'https://api.dicebear.com/8.x/initials/svg?backgroundColor=e8f3ff&fontFamily=Arial&seed=User';
 const ATTACHMENT_TYPES = [
   'image/png', 'image/jpeg', 'image/webp', 'image/gif',
@@ -63,7 +63,7 @@ async function fetchJson(path, options = {}) {
     }
   });
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || 'Не удалось выполнить запрос');
+  if (!response.ok) throw new Error(data.error || 'РќРµ СѓРґР°Р»РѕСЃСЊ РІС‹РїРѕР»РЅРёС‚СЊ Р·Р°РїСЂРѕСЃ');
   return data;
 }
 
@@ -80,11 +80,11 @@ function useRoute() {
 }
 
 function formatTime(value) {
-  if (!value) return 'недавно';
+  if (!value) return 'РЅРµРґР°РІРЅРѕ';
   const days = Math.max(0, Math.floor((Date.now() - new Date(value).getTime()) / 86400000));
-  if (days === 0) return 'сегодня';
-  if (days === 1) return '1 день назад';
-  return `${days} дн. назад`;
+  if (days === 0) return 'СЃРµРіРѕРґРЅСЏ';
+  if (days === 1) return '1 РґРµРЅСЊ РЅР°Р·Р°Рґ';
+  return `${days} РґРЅ. РЅР°Р·Р°Рґ`;
 }
 
 function splitTags(tags) {
@@ -131,12 +131,12 @@ function normalizeEditorHtml(root) {
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     if (!file) return resolve({ attachmentUrl: null, attachmentType: null, attachmentName: '' });
-    if (!ATTACHMENT_TYPES.includes(file.type)) return reject(new Error('Этот тип файла пока не поддерживается.'));
+    if (!ATTACHMENT_TYPES.includes(file.type)) return reject(new Error('Р­С‚РѕС‚ С‚РёРї С„Р°Р№Р»Р° РїРѕРєР° РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ.'));
     const limit = attachmentLimit(file.type);
-    if (file.size > limit) return reject(new Error(`Файл ${file.name} превышает лимит ${Math.round(limit / 1024 / 1024)} МБ.`));
+    if (file.size > limit) return reject(new Error(`Р¤Р°Р№Р» ${file.name} РїСЂРµРІС‹С€Р°РµС‚ Р»РёРјРёС‚ ${Math.round(limit / 1024 / 1024)} РњР‘.`));
     const reader = new FileReader();
     reader.onload = () => resolve({ url: reader.result, type: file.type, name: file.name, size: file.size });
-    reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
+    reader.onerror = () => reject(new Error('РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ С„Р°Р№Р».'));
     reader.readAsDataURL(file);
   });
 }
@@ -167,7 +167,7 @@ function unpackAttachments(url, type) {
       return [];
     }
   }
-  return [{ url, type, name: 'Вложение' }];
+  return [{ url, type, name: 'Р’Р»РѕР¶РµРЅРёРµ' }];
 }
 
 function highlightCode(code) {
@@ -186,7 +186,7 @@ function formatAiSummary(text) {
   return String(text || '')
     .split(/\n+/)
     .map((line) => line
-      .replace(/^\s{0,3}(#{1,6}|\*+|-+|•)\s*/u, '')
+      .replace(/^\s{0,3}(#{1,6}|\*+|-+|вЂў)\s*/u, '')
       .replace(/^\s{0,3}\d+[.)]\s*/, '')
       .replace(/\*\*/g, '')
       .trim())
@@ -227,15 +227,15 @@ function Header({ user, onLogout, route, theme, onThemeToggle }) {
       setSearchStatus('');
       return undefined;
     }
-    setSearchStatus('Загрузка...');
+    setSearchStatus('Р—Р°РіСЂСѓР·РєР°...');
     const timer = setTimeout(async () => {
       try {
         const results = await fetchJson(`/forum/search?query=${encodeURIComponent(query)}`);
         setSearchResults(results);
-        setSearchStatus(results.length ? '' : 'Ничего не найдено');
+        setSearchStatus(results.length ? '' : 'РќРёС‡РµРіРѕ РЅРµ РЅР°Р№РґРµРЅРѕ');
       } catch {
         setSearchResults([]);
-        setSearchStatus('Ошибка поиска');
+        setSearchStatus('РћС€РёР±РєР° РїРѕРёСЃРєР°');
       }
     }, 180);
     return () => clearTimeout(timer);
@@ -277,19 +277,19 @@ function Header({ user, onLogout, route, theme, onThemeToggle }) {
     <header className="gf-header">
       <div className="gf-brand">
         <button className="gf-logo" onClick={() => goSection('/')}><span className="gf-brand-mark"></span><span>Project Forum</span></button>
-        <button className="gf-theme-toggle" type="button" onClick={onThemeToggle} title={theme === 'dark' ? 'Светлая тема' : 'Темная тема'} aria-label={theme === 'dark' ? 'Светлая тема' : 'Темная тема'}>
+        <button className="gf-theme-toggle" type="button" onClick={onThemeToggle} title={theme === 'dark' ? 'РЎРІРµС‚Р»Р°СЏ С‚РµРјР°' : 'РўРµРјРЅР°СЏ С‚РµРјР°'} aria-label={theme === 'dark' ? 'РЎРІРµС‚Р»Р°СЏ С‚РµРјР°' : 'РўРµРјРЅР°СЏ С‚РµРјР°'}>
           <Icon name={theme === 'dark' ? 'sun' : 'moon'} size={17} />
         </button>
       </div>
-      <nav className="gf-nav" aria-label="Навигация">
-        <button onClick={() => goSection('/')} className="gf-nav-btn">Темы</button>
-        <button onClick={() => goSection('/forums')} className="gf-nav-btn">Форумы</button>
-        <button onClick={() => goSection('/guides')} className="gf-nav-btn">Гайды</button>
+      <nav className="gf-nav" aria-label="РќР°РІРёРіР°С†РёСЏ">
+        <button onClick={() => goSection('/')} className="gf-nav-btn">РўРµРјС‹</button>
+        <button onClick={() => goSection('/forums')} className="gf-nav-btn">Р¤РѕСЂСѓРјС‹</button>
+        <button onClick={() => goSection('/guides')} className="gf-nav-btn">Р“Р°Р№РґС‹</button>
       </nav>
       <div className="gf-header-actions">
         <form className={`gf-header-search ${searchOpen ? 'open' : ''}`} onSubmit={submitHeaderSearch}>
-          <button className="gf-icon-btn" type="button" title="Поиск" onClick={() => setSearchOpen((open) => !open)}><Icon name="search" /></button>
-          <input value={headerSearch} onChange={(event) => setHeaderSearch(event.target.value)} placeholder="Поиск темы" aria-label="Поиск темы" />
+          <button className="gf-icon-btn" type="button" title="РџРѕРёСЃРє" onClick={() => setSearchOpen((open) => !open)}><Icon name="search" /></button>
+          <input value={headerSearch} onChange={(event) => setHeaderSearch(event.target.value)} placeholder="РџРѕРёСЃРє С‚РµРјС‹" aria-label="РџРѕРёСЃРє С‚РµРјС‹" />
           {searchOpen && (headerSearch.trim() || searchStatus) && (
             <div className="gf-header-search-menu">
               {searchStatus && <p>{searchStatus}</p>}
@@ -303,21 +303,21 @@ function Header({ user, onLogout, route, theme, onThemeToggle }) {
             </div>
           )}
         </form>
-        <button className="gf-icon-btn" title="Создать тему" onClick={() => setRoute('/new')}><Icon name="plus" /></button>
+        <button className="gf-icon-btn" title="РЎРѕР·РґР°С‚СЊ С‚РµРјСѓ" onClick={() => setRoute('/new')}><Icon name="plus" /></button>
         {user ? (
           <div className="gf-header-user" ref={userMenuRef}>
             <button className="gf-user-chip" onClick={() => setMenuOpen(!menuOpen)}>
-              <img src={user.avatar_url || DEFAULT_AVATAR} alt={user.username || 'Профиль'} />
-              <span>{user.username || 'Профиль'}</span>
+              <img src={user.avatar_url || DEFAULT_AVATAR} alt={user.username || 'РџСЂРѕС„РёР»СЊ'} />
+              <span>{user.username || 'РџСЂРѕС„РёР»СЊ'}</span>
             </button>
             {menuOpen && <div className="gf-menu-popover gf-header-menu">
-              <button onClick={() => { setMenuOpen(false); setRoute(`/user/${user.id}`); }}>Профиль</button>
-              <button onClick={() => { setMenuOpen(false); setRoute('/profile'); }}>Редактировать</button>
-              <button onClick={() => { setMenuOpen(false); onLogout(); }}>Выйти</button>
+              <button onClick={() => { setMenuOpen(false); setRoute(`/user/${user.id}`); }}>РџСЂРѕС„РёР»СЊ</button>
+              <button onClick={() => { setMenuOpen(false); setRoute('/profile'); }}>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>
+              <button onClick={() => { setMenuOpen(false); onLogout(); }}>Р’С‹Р№С‚Рё</button>
             </div>}
           </div>
         ) : (
-          <a className="gf-login-button" href="login.html">Войти</a>
+          <a className="gf-login-button" href="login.html">Р’РѕР№С‚Рё</a>
         )}
       </div>
     </header>
@@ -334,7 +334,7 @@ function SearchTabs({ active, onActive, query, onQuery, popularTags }) {
       <div className="gf-search-wrap">
         <label className="gf-search">
           <Icon name="search" />
-          <input value={query} onChange={(event) => onQuery(event.target.value)} placeholder="Поиск темы, тега или форума" />
+          <input value={query} onChange={(event) => onQuery(event.target.value)} placeholder="РџРѕРёСЃРє С‚РµРјС‹, С‚РµРіР° РёР»Рё С„РѕСЂСѓРјР°" />
         </label>
         {tagQuery !== null && !!visibleTags.length && (
           <div className="gf-tag-suggestions">
@@ -343,9 +343,9 @@ function SearchTabs({ active, onActive, query, onQuery, popularTags }) {
         )}
       </div>
       <div className="gf-tabs">
-        <button className={active === 'latest' ? 'active' : ''} onClick={() => onActive('latest')}>Последние вопросы</button>
-        <button className={active === 'trending' ? 'active' : ''} onClick={() => onActive('trending')}>Популярные темы</button>
-        <button className={active === 'answered' ? 'active' : ''} onClick={() => onActive('answered')}>Больше ответов</button>
+        <button className={active === 'latest' ? 'active' : ''} onClick={() => onActive('latest')}>РџРѕСЃР»РµРґРЅРёРµ РІРѕРїСЂРѕСЃС‹</button>
+        <button className={active === 'trending' ? 'active' : ''} onClick={() => onActive('trending')}>РџРѕРїСѓР»СЏСЂРЅС‹Рµ С‚РµРјС‹</button>
+        <button className={active === 'answered' ? 'active' : ''} onClick={() => onActive('answered')}>Р‘РѕР»СЊС€Рµ РѕС‚РІРµС‚РѕРІ</button>
       </div>
     </section>
   );
@@ -372,9 +372,9 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
     try {
       if (navigator.share) await navigator.share({ title: topic.title, url });
       else await navigator.clipboard.writeText(url);
-      onToast('Ссылка на тему скопирована.');
+      onToast('РЎСЃС‹Р»РєР° РЅР° С‚РµРјСѓ СЃРєРѕРїРёСЂРѕРІР°РЅР°.');
     } catch {
-      onToast('Поделиться не получилось.');
+      onToast('РџРѕРґРµР»РёС‚СЊСЃСЏ РЅРµ РїРѕР»СѓС‡РёР»РѕСЃСЊ.');
     }
   };
 
@@ -383,7 +383,7 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
     saved ? list.delete(topic.id) : list.add(topic.id);
     localStorage.setItem('savedTopics', JSON.stringify([...list]));
     setSaved(!saved);
-    onToast(saved ? 'Тема убрана из сохранённых.' : 'Тема сохранена.');
+    onToast(saved ? 'РўРµРјР° СѓР±СЂР°РЅР° РёР· СЃРѕС…СЂР°РЅС‘РЅРЅС‹С….' : 'РўРµРјР° СЃРѕС…СЂР°РЅРµРЅР°.');
   };
 
   const deleteTopic = async () => {
@@ -392,7 +392,7 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
       method: 'DELETE',
       headers: { 'X-User-Id': String(currentUser.id) }
     });
-    onToast('Тема удалена.');
+    onToast('РўРµРјР° СѓРґР°Р»РµРЅР°.');
     onDeleted?.(topic.id);
   };
 
@@ -409,23 +409,23 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
     });
     setCommentText('');
     setCommentOpen(false);
-    onToast('Комментарий добавлен.');
+    onToast('РљРѕРјРјРµРЅС‚Р°СЂРёР№ РґРѕР±Р°РІР»РµРЅ.');
   };
 
   return (
     <article className="gf-topic-card">
       <div className="gf-topic-top">
         <span className="gf-category-dot"></span>
-        <span className="gf-category-name">{topic.forumTitle || 'Форум'}</span>
+        <span className="gf-category-name">{topic.forumTitle || 'Р¤РѕСЂСѓРј'}</span>
         <div className="gf-card-menu">
-          <button className="gf-menu-dot" title="Действия" onClick={() => setMenuOpen(!menuOpen)}>•••</button>
+          <button className="gf-menu-dot" title="Р”РµР№СЃС‚РІРёСЏ" onClick={() => setMenuOpen(!menuOpen)}>вЂўвЂўвЂў</button>
           {menuOpen && (
             <div className="gf-menu-popover">
-              <button onClick={shareTopic}>Скопировать ссылку</button>
-              <button onClick={toggleSaved}>{saved ? 'Убрать из сохранённых' : 'Сохранить'}</button>
-              <button onClick={() => setRoute(`/topic/${topic.id}`)}>Открыть тему</button>
-              {canEdit && <button onClick={() => setRoute(`/edit/${topic.id}`)}>Редактировать</button>}
-              {canDelete && <button className="danger" onClick={deleteTopic}>Удалить</button>}
+              <button onClick={shareTopic}>РЎРєРѕРїРёСЂРѕРІР°С‚СЊ СЃСЃС‹Р»РєСѓ</button>
+              <button onClick={toggleSaved}>{saved ? 'РЈР±СЂР°С‚СЊ РёР· СЃРѕС…СЂР°РЅС‘РЅРЅС‹С…' : 'РЎРѕС…СЂР°РЅРёС‚СЊ'}</button>
+              <button onClick={() => setRoute(`/topic/${topic.id}`)}>РћС‚РєСЂС‹С‚СЊ С‚РµРјСѓ</button>
+              {canEdit && <button onClick={() => setRoute(`/edit/${topic.id}`)}>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>}
+              {canDelete && <button className="danger" onClick={deleteTopic}>РЈРґР°Р»РёС‚СЊ</button>}
             </div>
           )}
         </div>
@@ -437,11 +437,11 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
           setRoute(`/?tag=${encodeURIComponent(value)}`);
         }} />)}
       </div>
-      <div className="gf-topic-meta">{formatTime(topic.createdAt)} • {Number(topic.commentsCount || 0)} ответов</div>
+      <div className="gf-topic-meta">{formatTime(topic.createdAt)} вЂў {Number(topic.commentsCount || 0)} РѕС‚РІРµС‚РѕРІ</div>
       <div className="gf-topic-actions">
-        <button onClick={shareTopic}><Icon name="trend" size={16} /> Поделиться</button>
-        <button onClick={() => setCommentOpen(!commentOpen)}><Icon name="message" size={16} /> Комментарий</button>
-        <button onClick={toggleSaved} className={saved ? 'active' : ''}><Icon name="bookmark" size={16} /> {saved ? 'Сохранено' : 'Сохранить'}</button>
+        <button onClick={shareTopic}><Icon name="trend" size={16} /> РџРѕРґРµР»РёС‚СЊСЃСЏ</button>
+        <button onClick={() => setCommentOpen(!commentOpen)}><Icon name="message" size={16} /> РљРѕРјРјРµРЅС‚Р°СЂРёР№</button>
+        <button onClick={toggleSaved} className={saved ? 'active' : ''}><Icon name="bookmark" size={16} /> {saved ? 'РЎРѕС…СЂР°РЅРµРЅРѕ' : 'РЎРѕС…СЂР°РЅРёС‚СЊ'}</button>
         <button className={`gf-score ${liked ? 'liked' : ''}`} onClick={async () => {
           if (!getCurrentUser()?.id) {
             window.location.href = 'login.html';
@@ -452,17 +452,17 @@ function TopicCard({ topic, onLike, onToast, onDeleted }) {
       </div>
       {commentOpen && (
         <form className="gf-quick-comment" onSubmit={sendQuickComment}>
-          <textarea value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="Напишите комментарий" rows="3"></textarea>
-          <button type="submit">Отправить</button>
+          <textarea value={commentText} onChange={(event) => setCommentText(event.target.value)} placeholder="РќР°РїРёС€РёС‚Рµ РєРѕРјРјРµРЅС‚Р°СЂРёР№" rows="3"></textarea>
+          <button type="submit">РћС‚РїСЂР°РІРёС‚СЊ</button>
         </form>
       )}
       <div className="gf-answer-preview">
         <div className="gf-answer-person">
-          <button className="gf-person-link" onClick={() => setRoute(`/user/${topic.userId}`)}><img src={topic.avatarUrl || DEFAULT_AVATAR} alt={topic.username || 'Автор'} /></button>
-          <div><button className="gf-name-link" onClick={() => setRoute(`/user/${topic.userId}`)}>{topic.username || 'Автор'}</button><span>{formatTime(topic.lastActivityAt)}</span></div>
+          <button className="gf-person-link" onClick={() => setRoute(`/user/${topic.userId}`)}><img src={topic.avatarUrl || DEFAULT_AVATAR} alt={topic.username || 'РђРІС‚РѕСЂ'} /></button>
+          <div><button className="gf-name-link" onClick={() => setRoute(`/user/${topic.userId}`)}>{topic.username || 'РђРІС‚РѕСЂ'}</button><span>{formatTime(topic.lastActivityAt)}</span></div>
         </div>
-        <p>{topic.excerpt || 'Откройте обсуждение, чтобы прочитать ответы и присоединиться к разговору.'}</p>
-        <button className="gf-read-answers" onClick={() => setRoute(`/topic/${topic.id}`)}>Читать ответы</button>
+        <p>{topic.excerpt || 'РћС‚РєСЂРѕР№С‚Рµ РѕР±СЃСѓР¶РґРµРЅРёРµ, С‡С‚РѕР±С‹ РїСЂРѕС‡РёС‚Р°С‚СЊ РѕС‚РІРµС‚С‹ Рё РїСЂРёСЃРѕРµРґРёРЅРёС‚СЊСЃСЏ Рє СЂР°Р·РіРѕРІРѕСЂСѓ.'}</p>
+        <button className="gf-read-answers" onClick={() => setRoute(`/topic/${topic.id}`)}>Р§РёС‚Р°С‚СЊ РѕС‚РІРµС‚С‹</button>
       </div>
     </article>
   );
@@ -478,11 +478,11 @@ function Sidebar({ topics, forums }) {
   return (
     <aside className="gf-left-rail">
       <section>
-        <h2>Моё пространство</h2>
-        <button onClick={() => user ? setRoute('/profile?tab=topics') : window.location.href = 'login.html'}><Icon name="message" /> Созданные темы</button>
-        <button onClick={() => user ? setRoute('/profile?tab=comments') : window.location.href = 'login.html'}><Icon name="pen" /> Мои комментарии</button>
-        <button onClick={() => user ? setRoute('/profile?tab=saved') : window.location.href = 'login.html'}><Icon name="bookmark" /> Сохранённые</button>
-        <button onClick={() => setForumsOpen(!forumsOpen)}><Icon name="grid" /> Форумы <span>{forumsOpen ? '−' : '+'}</span></button>
+        <h2>РњРѕС‘ РїСЂРѕСЃС‚СЂР°РЅСЃС‚РІРѕ</h2>
+        <button onClick={() => user ? setRoute('/profile?tab=topics') : window.location.href = 'login.html'}><Icon name="message" /> РЎРѕР·РґР°РЅРЅС‹Рµ С‚РµРјС‹</button>
+        <button onClick={() => user ? setRoute('/profile?tab=comments') : window.location.href = 'login.html'}><Icon name="pen" /> РњРѕРё РєРѕРјРјРµРЅС‚Р°СЂРёРё</button>
+        <button onClick={() => user ? setRoute('/profile?tab=saved') : window.location.href = 'login.html'}><Icon name="bookmark" /> РЎРѕС…СЂР°РЅС‘РЅРЅС‹Рµ</button>
+        <button onClick={() => setForumsOpen(!forumsOpen)}><Icon name="grid" /> Р¤РѕСЂСѓРјС‹ <span>{forumsOpen ? 'в€’' : '+'}</span></button>
         {forumsOpen && (
           <div className="gf-rail-nested">
             {forums.slice(0, 8).map((forum) => <button key={forum.id} onClick={() => setRoute(`/forum/${forum.id}`)}>{forum.title}</button>)}
@@ -490,29 +490,29 @@ function Sidebar({ topics, forums }) {
         )}
       </section>
       <section className="gf-side-card">
-        <h2>Топ обсуждений</h2>
+        <h2>РўРѕРї РѕР±СЃСѓР¶РґРµРЅРёР№</h2>
         <div className="gf-top-question-list">
           {topics.slice(0, 5).map((topic, index) => (
             <button key={topic.id} onClick={() => setRoute(`/topic/${topic.id}`)} className="gf-top-question">
               <span>#{index + 1}</span>
               <strong>{topic.title}</strong>
-              <small>{Number(topic.commentsCount || 0)} ответов</small>
+              <small>{Number(topic.commentsCount || 0)} РѕС‚РІРµС‚РѕРІ</small>
             </button>
           ))}
         </div>
       </section>
       <section className="gf-side-card">
-        <h2>Топ пользователей</h2>
+        <h2>РўРѕРї РїРѕР»СЊР·РѕРІР°С‚РµР»РµР№</h2>
         <div className="gf-top-user-list">
           {topUsers.slice(0, 5).map((item, index) => (
             <button key={item.id} onClick={() => setRoute(`/user/${item.id}`)} className="gf-top-user">
               <span>#{index + 1}</span>
-              <img src={item.avatarUrl || DEFAULT_AVATAR} alt={item.username || 'Пользователь'} />
-              <strong>{item.username || 'Пользователь'}</strong>
-              <small>{Number(item.likesCount || 0)} лайков</small>
+              <img src={item.avatarUrl || DEFAULT_AVATAR} alt={item.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'} />
+              <strong>{item.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'}</strong>
+              <small>{Number(item.likesCount || 0)} Р»Р°Р№РєРѕРІ</small>
             </button>
           ))}
-          {!topUsers.length && <p className="gf-side-empty">Пока нет лайков.</p>}
+          {!topUsers.length && <p className="gf-side-empty">РџРѕРєР° РЅРµС‚ Р»Р°Р№РєРѕРІ.</p>}
         </div>
       </section>
     </aside>
@@ -529,7 +529,7 @@ function Home({ mode = 'home' }) {
     return tag ? `#${tag}` : (search || '');
   });
   const [tab, setTab] = useState(mode === 'guides' ? 'answered' : 'latest');
-  const [status, setStatus] = useState('Загружаем форум...');
+  const [status, setStatus] = useState('Р—Р°РіСЂСѓР¶Р°РµРј С„РѕСЂСѓРј...');
   const [toast, setToast] = useState('');
 
   const load = async () => {
@@ -597,7 +597,7 @@ function Home({ mode = 'home' }) {
         <SearchTabs active={tab} onActive={setTab} query={query} onQuery={setQuery} popularTags={popularTags} />
         {status && <div className="gf-state">{status}</div>}
         {!status && filteredTopics.map((topic) => <TopicCard key={topic.id} topic={topic} onLike={likeTopic} onToast={setToast} onDeleted={(id) => setTopics((items) => items.filter((item) => item.id !== id))} />)}
-        {!status && !filteredTopics.length && <div className="gf-state">Подходящих тем не найдено.</div>}
+        {!status && !filteredTopics.length && <div className="gf-state">РџРѕРґС…РѕРґСЏС‰РёС… С‚РµРј РЅРµ РЅР°Р№РґРµРЅРѕ.</div>}
       </section>
     </main>
   );
@@ -607,7 +607,7 @@ function Forums() {
   const [forums, setForums] = useState([]);
   const [topics, setTopics] = useState([]);
   const [query, setQuery] = useState('');
-  const [status, setStatus] = useState('Загружаем форумы...');
+  const [status, setStatus] = useState('Р—Р°РіСЂСѓР¶Р°РµРј С„РѕСЂСѓРјС‹...');
   useEffect(() => {
     Promise.all([fetchJson('/forum/forums'), fetchJson('/forum/topics/popular')])
       .then(([data, nextTopics]) => { setForums(data); setTopics(nextTopics); setStatus(''); })
@@ -618,14 +618,14 @@ function Forums() {
     <main className="gf-page">
       <Sidebar topics={topics} forums={forums} />
       <section className="gf-directory">
-        <h1>Форумы</h1>
-        <p>Выберите раздел для вопросов, гайдов и обсуждений.</p>
-        <label className="gf-search gf-forum-search"><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Поиск форумов" /></label>
+        <h1>Р¤РѕСЂСѓРјС‹</h1>
+        <p>Р’С‹Р±РµСЂРёС‚Рµ СЂР°Р·РґРµР» РґР»СЏ РІРѕРїСЂРѕСЃРѕРІ, РіР°Р№РґРѕРІ Рё РѕР±СЃСѓР¶РґРµРЅРёР№.</p>
+        <label className="gf-search gf-forum-search"><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="РџРѕРёСЃРє С„РѕСЂСѓРјРѕРІ" /></label>
         {status && <div className="gf-state">{status}</div>}
         <div className="gf-forum-grid">
           {filtered.map((forum) => (
             <button key={forum.id} onClick={() => setRoute(`/forum/${forum.id}`)} className="gf-forum-card">
-              <Icon name="grid" /><strong>{forum.title}</strong><span>Открыть темы и категории</span>
+              <Icon name="grid" /><strong>{forum.title}</strong><span>РћС‚РєСЂС‹С‚СЊ С‚РµРјС‹ Рё РєР°С‚РµРіРѕСЂРёРё</span>
             </button>
           ))}
         </div>
@@ -639,7 +639,7 @@ function ForumView({ forumId }) {
   const [categories, setCategories] = useState([]);
   const [forum, setForum] = useState(null);
   const [activeCategory, setActiveCategory] = useState('');
-  const [status, setStatus] = useState('Загружаем темы...');
+  const [status, setStatus] = useState('Р—Р°РіСЂСѓР¶Р°РµРј С‚РµРјС‹...');
   useEffect(() => {
     Promise.all([fetchJson(`/forum/forums/${forumId}`), fetchJson(`/forum/forums/${forumId}/topics`), fetchJson(`/forum/forums/${forumId}/categories`)])
       .then(([nextForum, nextTopics, nextCategories]) => { setForum(nextForum); setTopics(nextTopics); setCategories(nextCategories); setStatus(''); })
@@ -659,10 +659,10 @@ function ForumView({ forumId }) {
       <Sidebar topics={topics} forums={forum ? [forum] : []} />
       <section className="gf-main-column">
         <section className="gf-filter-panel compact">
-          <button className="gf-back" onClick={() => setRoute('/forums')}>Все форумы</button>
-          <h1 className="gf-forum-title">{forum?.title || 'Форум'}</h1>
+          <button className="gf-back" onClick={() => setRoute('/forums')}>Р’СЃРµ С„РѕСЂСѓРјС‹</button>
+          <h1 className="gf-forum-title">{forum?.title || 'Р¤РѕСЂСѓРј'}</h1>
           <div className="gf-tabs wrap">
-            <button className={!activeCategory ? 'active' : ''} onClick={() => setActiveCategory('')}>Все темы</button>
+            <button className={!activeCategory ? 'active' : ''} onClick={() => setActiveCategory('')}>Р’СЃРµ С‚РµРјС‹</button>
             {categories.map((category) => <button key={category.id} className={Number(activeCategory) === Number(category.id) ? 'active' : ''} onClick={() => setActiveCategory(category.id)}>{category.name}</button>)}
           </div>
         </section>
@@ -683,7 +683,7 @@ function LegacyForumView() {
     else if (slug) fetchJson(`/forum/forums/slug/${encodeURIComponent(slug)}`).then((forum) => setForumId(forum.id)).catch(() => setRoute('/forums'));
     else setRoute('/forums');
   }, []);
-  return forumId ? <ForumView forumId={forumId} /> : <main className="gf-page gf-single"><div className="gf-state">Открываем форум...</div></main>;
+  return forumId ? <ForumView forumId={forumId} /> : <main className="gf-page gf-single"><div className="gf-state">РћС‚РєСЂС‹РІР°РµРј С„РѕСЂСѓРј...</div></main>;
 }
 
 function buildCommentTree(comments) {
@@ -756,33 +756,33 @@ function CommentItem({ item, topic, currentUser, onReload, onReply, depth = 0 })
 
   return (
     <article className={`gf-comment ${item.pinned ? 'pinned' : ''}`} style={{ marginLeft: depth ? Math.min(depth, 3) * 4 : 0 }}>
-      <button className="gf-person-link" onClick={() => setRoute(`/user/${item.userId}`)}><img src={item.avatarUrl || DEFAULT_AVATAR} alt={item.username || 'Пользователь'} /></button>
+      <button className="gf-person-link" onClick={() => setRoute(`/user/${item.userId}`)}><img src={item.avatarUrl || DEFAULT_AVATAR} alt={item.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'} /></button>
       <div className="gf-comment-body">
         <div className="gf-comment-head">
           <div>
-            <button className="gf-name-link" onClick={() => setRoute(`/user/${item.userId}`)}>{item.username || 'Пользователь'}</button>
-            <span>{formatTime(item.createdAt)}{item.edited ? ' • изменено' : ''}{item.authorComment ? ' • автор темы' : ''}</span>
+            <button className="gf-name-link" onClick={() => setRoute(`/user/${item.userId}`)}>{item.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'}</button>
+            <span>{formatTime(item.createdAt)}{item.edited ? ' вЂў РёР·РјРµРЅРµРЅРѕ' : ''}{item.authorComment ? ' вЂў Р°РІС‚РѕСЂ С‚РµРјС‹' : ''}</span>
           </div>
           <div className="gf-card-menu">
-            {item.pinned && <span className="gf-pin-badge"><Icon name="pin" size={13} /> Закреплено</span>}
-            <button className="gf-menu-dot" onClick={() => setMenuOpen(!menuOpen)}>•••</button>
+            {item.pinned && <span className="gf-pin-badge"><Icon name="pin" size={13} /> Р—Р°РєСЂРµРїР»РµРЅРѕ</span>}
+            <button className="gf-menu-dot" onClick={() => setMenuOpen(!menuOpen)}>вЂўвЂўвЂў</button>
             {menuOpen && <div className="gf-menu-popover">
-              {canEdit && <button onClick={() => { setEditing(true); setMenuOpen(false); }}>Редактировать</button>}
-              {canEdit && <button className="danger" onClick={deleteComment}>Удалить</button>}
+              {canEdit && <button onClick={() => { setEditing(true); setMenuOpen(false); }}>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>}
+              {canEdit && <button className="danger" onClick={deleteComment}>РЈРґР°Р»РёС‚СЊ</button>}
             </div>}
           </div>
         </div>
         {editing ? (
           <form className="gf-comment-edit" onSubmit={updateComment}>
             <textarea value={editText} onChange={(event) => setEditText(event.target.value)} rows="3"></textarea>
-            <div><button type="button" onClick={() => setEditing(false)}>Отмена</button><button type="submit">Сохранить</button></div>
+            <div><button type="button" onClick={() => setEditing(false)}>РћС‚РјРµРЅР°</button><button type="submit">РЎРѕС…СЂР°РЅРёС‚СЊ</button></div>
           </form>
         ) : <p>{item.content}</p>}
         <div className="gf-comment-actions">
           <button className={item.likedByCurrentUser ? 'active' : ''} onClick={like}><Icon name="heart" size={15} /> {Number(item.likesCount || 0)}</button>
-          <button onClick={() => onReply(item)}><Icon name="reply" size={15} /> Ответить</button>
-          <button className={saved ? 'active' : ''} onClick={toggleSaved}><Icon name="bookmark" size={15} /> {saved ? 'Сохранено' : 'Сохранить'}</button>
-          {isTopicAuthor && <button className={item.pinned ? 'active' : ''} onClick={pin}><Icon name="pin" size={15} /> {item.pinned ? 'Открепить' : 'Закрепить'}</button>}
+          <button onClick={() => onReply(item)}><Icon name="reply" size={15} /> РћС‚РІРµС‚РёС‚СЊ</button>
+          <button className={saved ? 'active' : ''} onClick={toggleSaved}><Icon name="bookmark" size={15} /> {saved ? 'РЎРѕС…СЂР°РЅРµРЅРѕ' : 'РЎРѕС…СЂР°РЅРёС‚СЊ'}</button>
+          {isTopicAuthor && <button className={item.pinned ? 'active' : ''} onClick={pin}><Icon name="pin" size={15} /> {item.pinned ? 'РћС‚РєСЂРµРїРёС‚СЊ' : 'Р—Р°РєСЂРµРїРёС‚СЊ'}</button>}
         </div>
         {!!item.children?.length && <div className="gf-comment-children">{item.children.map((child) => <CommentItem key={child.id} item={child} topic={topic} currentUser={currentUser} onReload={onReload} onReply={onReply} depth={depth + 1} />)}</div>}
       </div>
@@ -807,7 +807,7 @@ function TopicView({ topicId }) {
   const [aiOpen, setAiOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState('');
-  const [status, setStatus] = useState('Загружаем обсуждение...');
+  const [status, setStatus] = useState('Р—Р°РіСЂСѓР¶Р°РµРј РѕР±СЃСѓР¶РґРµРЅРёРµ...');
   const load = async () => {
     const [nextTopic, nextComments, nextForums, nextPopular] = await Promise.all([
       fetchJson(`/forum/topics/${topicId}`),
@@ -915,29 +915,29 @@ function TopicView({ topicId }) {
       {topic && (
         <>
         <article className="gf-detail">
-          <button className="gf-back gf-back-icon" title="Назад" onClick={() => window.history.length > 1 ? window.history.back() : setRoute(`/forum/${topic.forumId}`)}>‹</button>
+          <button className="gf-back gf-back-icon" title="РќР°Р·Р°Рґ" onClick={() => window.history.length > 1 ? window.history.back() : setRoute(`/forum/${topic.forumId}`)}>вЂ№</button>
           <div className="gf-topic-top">
             <span className="gf-category-dot"></span>
             <span className="gf-category-name">{topic.forumTitle}</span>
             <div className="gf-topic-tools">
-              <button className={`gf-ai-button ${aiOpen ? 'active' : ''}`} title="ИИ-разбор темы" onClick={loadAiSummary} disabled={aiLoading}>
+              <button className={`gf-ai-button ${aiOpen ? 'active' : ''}`} title="РР-СЂР°Р·Р±РѕСЂ С‚РµРјС‹" onClick={loadAiSummary} disabled={aiLoading}>
                 <Icon name="star" size={17} />
               </button>
               <div className="gf-card-menu">
-                <button className="gf-menu-dot" onClick={() => setMenuOpen(!menuOpen)}>•••</button>
+                <button className="gf-menu-dot" onClick={() => setMenuOpen(!menuOpen)}>вЂўвЂўвЂў</button>
                 {menuOpen && <div className="gf-menu-popover">
-                  {canEditTopic && <button onClick={() => setRoute(`/edit/${topic.id}`)}>Редактировать</button>}
-                  {canDelete && <button className="danger" onClick={deleteTopic}>Удалить</button>}
+                  {canEditTopic && <button onClick={() => setRoute(`/edit/${topic.id}`)}>Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>}
+                  {canDelete && <button className="danger" onClick={deleteTopic}>РЈРґР°Р»РёС‚СЊ</button>}
                 </div>}
               </div>
             </div>
           </div>
           <h1>{topic.title}</h1>
           <div className="gf-tags">{splitTags(topic.tags).map((tag) => <TagButton key={tag} tag={tag} onTag={(value) => setRoute(`/?tag=${encodeURIComponent(value)}`)} />)}</div>
-          <div className="gf-detail-author"><button className="gf-person-link" onClick={() => setRoute(`/user/${topic.userId}`)}><img src={topic.avatarUrl || DEFAULT_AVATAR} alt={topic.username || 'Автор'} /></button><div><button className="gf-name-link" onClick={() => setRoute(`/user/${topic.userId}`)}>{topic.username}</button><span>{formatTime(topic.createdAt)} • {topic.categoryName}</span></div></div>
+          <div className="gf-detail-author"><button className="gf-person-link" onClick={() => setRoute(`/user/${topic.userId}`)}><img src={topic.avatarUrl || DEFAULT_AVATAR} alt={topic.username || 'РђРІС‚РѕСЂ'} /></button><div><button className="gf-name-link" onClick={() => setRoute(`/user/${topic.userId}`)}>{topic.username}</button><span>{formatTime(topic.createdAt)} вЂў {topic.categoryName}</span></div></div>
           <div className="gf-detail-content" dangerouslySetInnerHTML={{ __html: sanitizeRichText(topic.content).replace(/\n/g, '<br>') }}></div>
           {topic.codeBlock && <div className="gf-code-block">
-            <div className="gf-code-label"><span>{topic.codeLanguage || 'code'}</span><strong>Код</strong></div>
+            <div className="gf-code-label"><span>{topic.codeLanguage || 'code'}</span><strong>РљРѕРґ</strong></div>
             <pre className="gf-code"><code>{topic.codeBlock}</code></pre>
           </div>}
           {topic.pollQuestion && <PollDisplay topicId={topic.id} question={topic.pollQuestion} options={String(topic.pollOptions || '').split('\n').filter(Boolean)} />}
@@ -948,35 +948,35 @@ function TopicView({ topicId }) {
             <div className="gf-viewers-wrap">
               <button type="button" onClick={toggleViewers} className={viewersOpen ? 'active' : ''}><Icon name="eye" /> {topic.viewsCount}</button>
               {viewersOpen && <div className="gf-viewers-menu">
-                {viewersLoading && <p>Загрузка...</p>}
-                {!viewersLoading && !viewers.length && <p>Пока нет просмотров.</p>}
+                {viewersLoading && <p>Р—Р°РіСЂСѓР·РєР°...</p>}
+                {!viewersLoading && !viewers.length && <p>РџРѕРєР° РЅРµС‚ РїСЂРѕСЃРјРѕС‚СЂРѕРІ.</p>}
                 {!viewersLoading && viewers.map((viewer) => (
                   <button type="button" key={viewer.id} onClick={() => setRoute(`/user/${viewer.id}`)}>
-                    <img src={viewer.avatarUrl || DEFAULT_AVATAR} alt={viewer.username || 'Пользователь'} />
-                    <span>{viewer.username || 'Пользователь'}</span>
+                    <img src={viewer.avatarUrl || DEFAULT_AVATAR} alt={viewer.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'} />
+                    <span>{viewer.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ'}</span>
                   </button>
                 ))}
               </div>}
             </div>
           </div>
           {(commentFormOpen || replyTo) && <form id="answer" className="gf-comment-form" onSubmit={sendComment}>
-            {replyTo && <div className="gf-reply-target">Ответ для {replyTo.username}<button type="button" onClick={() => setReplyTo(null)}>Отменить</button></div>}
-            <textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder={replyTo ? 'Напишите ответ на комментарий' : 'Напишите ответ'} rows="4"></textarea>
-            <button type="submit">Отправить</button>
+            {replyTo && <div className="gf-reply-target">РћС‚РІРµС‚ РґР»СЏ {replyTo.username}<button type="button" onClick={() => setReplyTo(null)}>РћС‚РјРµРЅРёС‚СЊ</button></div>}
+            <textarea value={comment} onChange={(event) => setComment(event.target.value)} placeholder={replyTo ? 'РќР°РїРёС€РёС‚Рµ РѕС‚РІРµС‚ РЅР° РєРѕРјРјРµРЅС‚Р°СЂРёР№' : 'РќР°РїРёС€РёС‚Рµ РѕС‚РІРµС‚'} rows="4"></textarea>
+            <button type="submit">РћС‚РїСЂР°РІРёС‚СЊ</button>
           </form>}
-          <h2>Ответы</h2>
+          <h2>РћС‚РІРµС‚С‹</h2>
           <div className="gf-comments">{commentTree.map((item) => <CommentItem key={item.id} item={item} topic={topic} currentUser={currentUser} onReload={load} onReply={(target) => { setReplyTo(target); setCommentFormOpen(true); setComment(`@${target.username} `); setTimeout(() => document.getElementById('answer')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 0); }} />)}</div>
         </article>
         {aiOpen && (
-          <aside className="gf-ai-chat" role="dialog" aria-label="ИИ-разбор обсуждения">
+          <aside className="gf-ai-chat" role="dialog" aria-label="РР-СЂР°Р·Р±РѕСЂ РѕР±СЃСѓР¶РґРµРЅРёСЏ">
             <div className="gf-ai-chat-head">
-              <div><Icon name="star" size={18} /><strong>ИИ-разбор</strong></div>
-              <button type="button" title="Закрыть" onClick={closeAiSummary}><Icon name="x" size={16} /></button>
+              <div><Icon name="star" size={18} /><strong>РР-СЂР°Р·Р±РѕСЂ</strong></div>
+              <button type="button" title="Р—Р°РєСЂС‹С‚СЊ" onClick={closeAiSummary}><Icon name="x" size={16} /></button>
             </div>
             <div className="gf-ai-chat-body">
               <div className="gf-ai-message assistant">
                 <strong>Project Forum AI</strong>
-                {aiLoading && <p>Читаю пост и комментарии, собираю понятный разбор...</p>}
+                {aiLoading && <p>Р§РёС‚Р°СЋ РїРѕСЃС‚ Рё РєРѕРјРјРµРЅС‚Р°СЂРёРё, СЃРѕР±РёСЂР°СЋ РїРѕРЅСЏС‚РЅС‹Р№ СЂР°Р·Р±РѕСЂ...</p>}
                 {aiError && <p className="gf-ai-error">{aiError}</p>}
                 {aiSummary?.summary && <div className="gf-ai-summary-text">{formatAiSummary(aiSummary.summary)}</div>}
               </div>
@@ -995,12 +995,12 @@ function AttachmentGallery({ files, onRemove }) {
     <div className="gf-attachment-gallery">
       {files.map((file, index) => (
         <div className="gf-attachment-item" key={`${file.name}-${index}`}>
-          {file.type?.startsWith('image/') && <img src={file.url} alt={file.name || 'Вложение'} />}
+          {file.type?.startsWith('image/') && <img src={file.url} alt={file.name || 'Р’Р»РѕР¶РµРЅРёРµ'} />}
           {file.type?.startsWith('video/') && <video src={file.url} controls></video>}
           {file.type?.startsWith('audio/') && <audio src={file.url} controls></audio>}
-          {!isPreviewableAttachment(file) && <a href={file.url} target="_blank">{file.name || 'Документ'}</a>}
-          <span>{file.name || 'Файл'}</span>
-          {onRemove && <button className="gf-attachment-remove" type="button" onClick={() => onRemove(index)}>×</button>}
+          {!isPreviewableAttachment(file) && <a href={file.url} target="_blank">{file.name || 'Р”РѕРєСѓРјРµРЅС‚'}</a>}
+          <span>{file.name || 'Р¤Р°Р№Р»'}</span>
+          {onRemove && <button className="gf-attachment-remove" type="button" onClick={() => onRemove(index)}>Г—</button>}
         </div>
       ))}
     </div>
@@ -1054,7 +1054,7 @@ function PollDisplay({ topicId, question, options }) {
           </button>
         );
       })}
-      {selected && <span>Ваш выбор: {selected}</span>}
+      {selected && <span>Р’Р°С€ РІС‹Р±РѕСЂ: {selected}</span>}
     </div>
   );
 }
@@ -1084,7 +1084,7 @@ function NewTopic({ editId = null }) {
     fetchJson(`/forum/topics/${editId}`)
       .then((topic) => {
         if (!user?.id || Number(user.id) !== Number(topic.userId)) {
-          setStatus('Редактировать тему может только автор.');
+          setStatus('Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ С‚РµРјСѓ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ Р°РІС‚РѕСЂ.');
           return;
         }
         setForm({
@@ -1111,7 +1111,7 @@ function NewTopic({ editId = null }) {
   const selectedForum = forums.find((forum) => Number(forum.id) === Number(form.forumId));
   const filteredForums = forums.filter((forum) => forum.title.toLowerCase().includes(forumQuery.toLowerCase())).slice(0, 5);
   const togglePoll = () => {
-    update('pollQuestion', form.pollQuestion ? '' : 'Вопрос опроса');
+    update('pollQuestion', form.pollQuestion ? '' : 'Р’РѕРїСЂРѕСЃ РѕРїСЂРѕСЃР°');
     if (!form.pollQuestion) setPollOptions(['', '']);
   };
   const detectLanguage = (code) => {
@@ -1122,7 +1122,7 @@ function NewTopic({ editId = null }) {
     if (/#include|int main/.test(code)) return 'cpp';
     return 'code';
   };
-  const toggleCode = () => update('codeBlock', form.codeBlock ? '' : '// вставьте код сюда');
+  const toggleCode = () => update('codeBlock', form.codeBlock ? '' : '// РІСЃС‚Р°РІСЊС‚Рµ РєРѕРґ СЃСЋРґР°');
   const pushEditorHistory = () => {
     const html = editorRef.current?.innerHTML || '';
     const stack = undoStackRef.current;
@@ -1201,7 +1201,7 @@ function NewTopic({ editId = null }) {
   const chooseFile = async (event) => {
     try {
       const selected = Array.from(event.target.files || []);
-      if (attachments.length + selected.length > 3) throw new Error('Можно прикрепить максимум 3 файла.');
+      if (attachments.length + selected.length > 3) throw new Error('РњРѕР¶РЅРѕ РїСЂРёРєСЂРµРїРёС‚СЊ РјР°РєСЃРёРјСѓРј 3 С„Р°Р№Р»Р°.');
       const nextFiles = await Promise.all(selected.map(fileToDataUrl));
       setAttachments((items) => [...items, ...nextFiles].slice(0, 3));
       event.target.value = '';
@@ -1211,15 +1211,15 @@ function NewTopic({ editId = null }) {
     event.preventDefault();
     if (!user?.id) { window.location.href = 'login.html'; return; }
     if (!form.forumId || !form.categoryId) {
-      setStatus('Выберите форум и категорию справа.');
+      setStatus('Р’С‹Р±РµСЂРёС‚Рµ С„РѕСЂСѓРј Рё РєР°С‚РµРіРѕСЂРёСЋ СЃРїСЂР°РІР°.');
       return;
     }
     if (!String(form.content || '').replace(/<[^>]*>/g, '').trim()) {
-      setStatus('Опишите вопрос или идею.');
+      setStatus('РћРїРёС€РёС‚Рµ РІРѕРїСЂРѕСЃ РёР»Рё РёРґРµСЋ.');
       return;
     }
     try {
-      setStatus(isEditing ? 'Сохраняем тему...' : 'Публикуем тему...');
+      setStatus(isEditing ? 'РЎРѕС…СЂР°РЅСЏРµРј С‚РµРјСѓ...' : 'РџСѓР±Р»РёРєСѓРµРј С‚РµРјСѓ...');
       const saved = await fetchJson(isEditing ? `/forum/topics/${editId}` : '/forum/topics', {
         method: isEditing ? 'PUT' : 'POST',
         body: JSON.stringify({
@@ -1237,16 +1237,16 @@ function NewTopic({ editId = null }) {
   return (
     <main className="gf-compose-page">
       <aside className="gf-compose-tools">
-        <button type="button" className={showStyles ? 'active tool-on' : ''} onClick={() => setShowStyles(!showStyles)}><Icon name="pen" /> Стили</button>
-        <button type="button" onClick={() => fileInput.current?.click()}><Icon name="clip" /> Файл</button>
-        <button type="button" className={form.pollQuestion ? 'active tool-on' : ''} onClick={togglePoll}><Icon name="poll" /> Опрос</button>
-        <button type="button" className={form.codeBlock ? 'active tool-on' : ''} onClick={toggleCode}><Icon name="code" /> Код</button>
+        <button type="button" className={showStyles ? 'active tool-on' : ''} onClick={() => setShowStyles(!showStyles)}><Icon name="pen" /> РЎС‚РёР»Рё</button>
+        <button type="button" onClick={() => fileInput.current?.click()}><Icon name="clip" /> Р¤Р°Р№Р»</button>
+        <button type="button" className={form.pollQuestion ? 'active tool-on' : ''} onClick={togglePoll}><Icon name="poll" /> РћРїСЂРѕСЃ</button>
+        <button type="button" className={form.codeBlock ? 'active tool-on' : ''} onClick={toggleCode}><Icon name="code" /> РљРѕРґ</button>
       </aside>
       <form className="gf-compose-editor" onSubmit={submit}>
         <div className="gf-compose-head">
-          <button type="button" onClick={() => isEditing ? setRoute(`/topic/${editId}`) : setRoute('/')}>Назад</button>
-          <strong>{isEditing ? 'Редактировать тему' : 'Новая тема'}</strong>
-          <button type="submit">{isEditing ? 'Сохранить' : 'Опубликовать'}</button>
+          <button type="button" onClick={() => isEditing ? setRoute(`/topic/${editId}`) : setRoute('/')}>РќР°Р·Р°Рґ</button>
+          <strong>{isEditing ? 'Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ С‚РµРјСѓ' : 'РќРѕРІР°СЏ С‚РµРјР°'}</strong>
+          <button type="submit">{isEditing ? 'РЎРѕС…СЂР°РЅРёС‚СЊ' : 'РћРїСѓР±Р»РёРєРѕРІР°С‚СЊ'}</button>
         </div>
         <div className="gf-compose-layout">
           <div className="gf-compose-main">
@@ -1258,33 +1258,33 @@ function NewTopic({ editId = null }) {
           </select>
           <input type="color" value={textColor} onMouseDown={saveSelection} onChange={(event) => { setTextColor(event.target.value); applyInlineStyle('color', event.target.value); }} />
         </div>}
-        <input value={form.title} onChange={(event) => update('title', event.target.value)} placeholder="Заголовок" maxLength="200" required />
-        <input value={form.tags} onChange={(event) => update('tags', event.target.value)} placeholder="Теги" />
-        <div id="topic-content-editor" ref={editorRef} className="gf-rich-editor" contentEditable="true" data-placeholder="Опишите вопрос или идею" onBeforeInput={pushEditorHistory} onInput={syncEditor} onMouseUp={saveSelection} onKeyUp={saveSelection} onKeyDown={(event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undoEditor(); } }}></div>
+        <input value={form.title} onChange={(event) => update('title', event.target.value)} placeholder="Р—Р°РіРѕР»РѕРІРѕРє" maxLength="200" required />
+        <input value={form.tags} onChange={(event) => update('tags', event.target.value)} placeholder="РўРµРіРё" />
+        <div id="topic-content-editor" ref={editorRef} className="gf-rich-editor" contentEditable="true" data-placeholder="РћРїРёС€РёС‚Рµ РІРѕРїСЂРѕСЃ РёР»Рё РёРґРµСЋ" onBeforeInput={pushEditorHistory} onInput={syncEditor} onMouseUp={saveSelection} onKeyUp={saveSelection} onKeyDown={(event) => { if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') { event.preventDefault(); undoEditor(); } }}></div>
         <input ref={fileInput} type="file" multiple hidden accept={ATTACHMENT_TYPES.join(',')} onChange={chooseFile} />
         <AttachmentGallery files={attachments} onRemove={(index) => setAttachments((items) => items.filter((_, itemIndex) => itemIndex !== index))} />
         {form.pollQuestion && <section className="gf-compose-extra gf-poll-editor">
-          <input value={form.pollQuestion} onChange={(event) => update('pollQuestion', event.target.value)} placeholder="Вопрос опроса" />
+          <input value={form.pollQuestion} onChange={(event) => update('pollQuestion', event.target.value)} placeholder="Р’РѕРїСЂРѕСЃ РѕРїСЂРѕСЃР°" />
           {pollOptions.map((option, index) => (
             <div className="gf-poll-option-row" key={index}>
-              <input value={option} onChange={(event) => setPollOptions((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Вариант ${index + 1}`} />
-              <button type="button" onClick={() => setPollOptions((items) => items.filter((_, itemIndex) => itemIndex !== index))}>Удалить</button>
+              <input value={option} onChange={(event) => setPollOptions((items) => items.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} placeholder={`Р’Р°СЂРёР°РЅС‚ ${index + 1}`} />
+              <button type="button" onClick={() => setPollOptions((items) => items.filter((_, itemIndex) => itemIndex !== index))}>РЈРґР°Р»РёС‚СЊ</button>
             </div>
           ))}
           <button type="button" onClick={() => setPollOptions((items) => [...items, ''])}>+</button>
         </section>}
         {form.codeBlock && <section className="gf-code-editor">
-          <div><span>{detectLanguage(form.codeBlock)}</span><strong>Код</strong></div>
-          <textarea value={form.codeBlock} onChange={(event) => update('codeBlock', event.target.value)} rows="9" spellCheck="false" placeholder="// код"></textarea>
+          <div><span>{detectLanguage(form.codeBlock)}</span><strong>РљРѕРґ</strong></div>
+          <textarea value={form.codeBlock} onChange={(event) => update('codeBlock', event.target.value)} rows="9" spellCheck="false" placeholder="// РєРѕРґ"></textarea>
         </section>}
         <p className="gf-form-status">{status}</p>
           </div>
           <aside className="gf-compose-side">
-            <label className="gf-search"><Icon name="search" /><input value={forumQuery} onChange={(event) => setForumQuery(event.target.value)} placeholder="Поиск форумов" /></label>
+            <label className="gf-search"><Icon name="search" /><input value={forumQuery} onChange={(event) => setForumQuery(event.target.value)} placeholder="РџРѕРёСЃРє С„РѕСЂСѓРјРѕРІ" /></label>
             <div className="gf-compose-forums">
               {filteredForums.map((forum) => <button type="button" key={forum.id} className={Number(form.forumId) === Number(forum.id) ? 'active' : ''} onClick={() => { update('forumId', forum.id); update('categoryId', ''); }}>{forum.title}</button>)}
             </div>
-            <h3>{selectedForum ? 'Категории' : 'Выберите форум'}</h3>
+            <h3>{selectedForum ? 'РљР°С‚РµРіРѕСЂРёРё' : 'Р’С‹Р±РµСЂРёС‚Рµ С„РѕСЂСѓРј'}</h3>
             <div className="gf-compose-categories">
               {categories.map((category) => <button type="button" key={category.id} className={Number(form.categoryId) === Number(category.id) ? 'active' : ''} onClick={() => update('categoryId', category.id)}>{category.name}</button>)}
             </div>
@@ -1348,7 +1348,7 @@ function Profile({ onLogout, onUserChange }) {
       saveCurrentUser(updated);
       onUserChange(getCurrentUser());
       setAccountForm((prev) => ({ ...prev, currentPassword: '', newPassword: '' }));
-      setStatus('Профиль сохранён.');
+      setStatus('РџСЂРѕС„РёР»СЊ СЃРѕС…СЂР°РЅС‘РЅ.');
     } catch (error) { setStatus(error.message); }
   };
 
@@ -1359,11 +1359,11 @@ function Profile({ onLogout, onUserChange }) {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!['image/png', 'image/jpeg'].includes(file.type)) {
-      setStatus('Фото профиля должно быть png или jpg.');
+      setStatus('Р¤РѕС‚Рѕ РїСЂРѕС„РёР»СЏ РґРѕР»Р¶РЅРѕ Р±С‹С‚СЊ png РёР»Рё jpg.');
       return;
     }
     if (file.size > 10 * 1024 * 1024) {
-      setStatus('Фото профиля не должно превышать 10 МБ.');
+      setStatus('Р¤РѕС‚Рѕ РїСЂРѕС„РёР»СЏ РЅРµ РґРѕР»Р¶РЅРѕ РїСЂРµРІС‹С€Р°С‚СЊ 10 РњР‘.');
       return;
     }
     const data = await fileToDataUrl(file);
@@ -1393,50 +1393,50 @@ function Profile({ onLogout, onUserChange }) {
     <main className="gf-settings-page">
       <section className="gf-settings-modal">
         <nav className="gf-settings-tabs">
-          <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>Профиль</button>
-          <button className={tab === 'account' ? 'active' : ''} onClick={() => setTab('account')}>Аккаунт</button>
-          <button className={tab === 'topics' ? 'active' : ''} onClick={() => setTab('topics')}>Созданные темы</button>
-          <button className={tab === 'comments' ? 'active' : ''} onClick={() => setTab('comments')}>Комментарии</button>
-          <button className={tab === 'saved' ? 'active' : ''} onClick={() => setTab('saved')}>Сохранённые</button>
-          {user?.admin && <button className={tab === 'admin' ? 'active' : ''} onClick={() => setTab('admin')}>Панель управления</button>}
-          <button className="danger" onClick={onLogout}>Выйти</button>
+          <button className={tab === 'profile' ? 'active' : ''} onClick={() => setTab('profile')}>РџСЂРѕС„РёР»СЊ</button>
+          <button className={tab === 'account' ? 'active' : ''} onClick={() => setTab('account')}>РђРєРєР°СѓРЅС‚</button>
+          <button className={tab === 'topics' ? 'active' : ''} onClick={() => setTab('topics')}>РЎРѕР·РґР°РЅРЅС‹Рµ С‚РµРјС‹</button>
+          <button className={tab === 'comments' ? 'active' : ''} onClick={() => setTab('comments')}>РљРѕРјРјРµРЅС‚Р°СЂРёРё</button>
+          <button className={tab === 'saved' ? 'active' : ''} onClick={() => setTab('saved')}>РЎРѕС…СЂР°РЅС‘РЅРЅС‹Рµ</button>
+          {user?.admin && <button className={tab === 'admin' ? 'active' : ''} onClick={() => setTab('admin')}>РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ</button>}
+          <button className="danger" onClick={onLogout}>Р’С‹Р№С‚Рё</button>
         </nav>
         <div className="gf-settings-content">
           {tab === 'profile' && profile && (
             <>
-              <label>Фото профиля</label>
-              <div className="gf-avatar-row"><img src={profile.avatarUrl || DEFAULT_AVATAR} alt={profile.username} /><button onClick={() => avatarInput.current?.click()}>Изменить фото</button><button className="danger" onClick={() => setProfile((prev) => ({ ...prev, avatarUrl: '' }))}>Удалить фото</button></div>
+              <label>Р¤РѕС‚Рѕ РїСЂРѕС„РёР»СЏ</label>
+              <div className="gf-avatar-row"><img src={profile.avatarUrl || DEFAULT_AVATAR} alt={profile.username} /><button onClick={() => avatarInput.current?.click()}>РР·РјРµРЅРёС‚СЊ С„РѕС‚Рѕ</button><button className="danger" onClick={() => setProfile((prev) => ({ ...prev, avatarUrl: '' }))}>РЈРґР°Р»РёС‚СЊ С„РѕС‚Рѕ</button></div>
               <input ref={avatarInput} type="file" hidden accept="image/*" onChange={chooseAvatar} />
-              <label>Имя профиля</label>
+              <label>РРјСЏ РїСЂРѕС„РёР»СЏ</label>
               <input value={profile.username || ''} onChange={(event) => setProfile((prev) => ({ ...prev, username: event.target.value }))} />
               <label>Email</label>
               <input value={profile.email || ''} disabled />
-              <label>О себе</label>
-              <textarea rows="5" value={profile.bio || ''} onChange={(event) => setProfile((prev) => ({ ...prev, bio: event.target.value }))} placeholder="Расскажите пару слов о себе"></textarea>
+              <label>Рћ СЃРµР±Рµ</label>
+              <textarea rows="5" value={profile.bio || ''} onChange={(event) => setProfile((prev) => ({ ...prev, bio: event.target.value }))} placeholder="Р Р°СЃСЃРєР°Р¶РёС‚Рµ РїР°СЂСѓ СЃР»РѕРІ Рѕ СЃРµР±Рµ"></textarea>
               <div className="gf-profile-stats">
-                <div><Icon name="message" /><strong>{topics.length}</strong><span>созданных обсуждений</span></div>
-                <div><Icon name="heart" /><strong>{totalLikes}</strong><span>полученных лайков</span></div>
-                <div><Icon name="eye" /><strong>{totalViews}</strong><span>просмотров тем</span></div>
+                <div><Icon name="message" /><strong>{topics.length}</strong><span>СЃРѕР·РґР°РЅРЅС‹С… РѕР±СЃСѓР¶РґРµРЅРёР№</span></div>
+                <div><Icon name="heart" /><strong>{totalLikes}</strong><span>РїРѕР»СѓС‡РµРЅРЅС‹С… Р»Р°Р№РєРѕРІ</span></div>
+                <div><Icon name="eye" /><strong>{totalViews}</strong><span>РїСЂРѕСЃРјРѕС‚СЂРѕРІ С‚РµРј</span></div>
               </div>
-              <button className="gf-save-button" onClick={saveProfile}>Сохранить изменения</button>
+              <button className="gf-save-button" onClick={saveProfile}>РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ</button>
             </>
           )}
           {tab === 'account' && <div className="gf-account-form">
-            <h2>Аккаунт</h2>
+            <h2>РђРєРєР°СѓРЅС‚</h2>
             <label>Email</label>
             <input value={accountForm.email} onChange={(event) => setAccountForm((prev) => ({ ...prev, email: event.target.value }))} />
-            <label>Текущий пароль</label>
+            <label>РўРµРєСѓС‰РёР№ РїР°СЂРѕР»СЊ</label>
             <input type="password" value={accountForm.currentPassword} onChange={(event) => setAccountForm((prev) => ({ ...prev, currentPassword: event.target.value }))} />
-            <label>Новый пароль</label>
+            <label>РќРѕРІС‹Р№ РїР°СЂРѕР»СЊ</label>
             <input type="password" value={accountForm.newPassword} onChange={(event) => setAccountForm((prev) => ({ ...prev, newPassword: event.target.value }))} />
-            <p>Статус: {profile?.blocked ? 'ограничен' : 'активен'}</p>
-            <button className="gf-save-button" onClick={saveProfile}>Сохранить аккаунт</button>
+            <p>РЎС‚Р°С‚СѓСЃ: {profile?.blocked ? 'РѕРіСЂР°РЅРёС‡РµРЅ' : 'Р°РєС‚РёРІРµРЅ'}</p>
+            <button className="gf-save-button" onClick={saveProfile}>РЎРѕС…СЂР°РЅРёС‚СЊ Р°РєРєР°СѓРЅС‚</button>
           </div>}
-          {tab === 'topics' && <ContentList title="Созданные темы" items={topics} type="topic" />}
-          {tab === 'comments' && <ContentList title="Комментарии" items={comments} type="comment" />}
+          {tab === 'topics' && <ContentList title="РЎРѕР·РґР°РЅРЅС‹Рµ С‚РµРјС‹" items={topics} type="topic" />}
+          {tab === 'comments' && <ContentList title="РљРѕРјРјРµРЅС‚Р°СЂРёРё" items={comments} type="comment" />}
           {tab === 'saved' && <div className="gf-saved-space">
-            <ContentList title="Сохранённые темы" items={savedTopics} type="topic" />
-            <ContentList title="Сохранённые комментарии" items={savedComments} type="comment" />
+            <ContentList title="РЎРѕС…СЂР°РЅС‘РЅРЅС‹Рµ С‚РµРјС‹" items={savedTopics} type="topic" />
+            <ContentList title="РЎРѕС…СЂР°РЅС‘РЅРЅС‹Рµ РєРѕРјРјРµРЅС‚Р°СЂРёРё" items={savedComments} type="comment" />
           </div>}
           {tab === 'admin' && user?.admin && <AdminPanel />}
         </div>
@@ -1444,10 +1444,10 @@ function Profile({ onLogout, onUserChange }) {
       </section>
       {cropImage && <div className="gf-crop-modal">
         <div className="gf-crop-card">
-          <h2>Обрезка фото</h2>
+          <h2>РћР±СЂРµР·РєР° С„РѕС‚Рѕ</h2>
           <div className="gf-crop-preview"><img src={cropImage} style={{ transform: `scale(${cropZoom})` }} /></div>
           <input type="range" min="1" max="2" step="0.05" value={cropZoom} onChange={(event) => setCropZoom(Number(event.target.value))} />
-          <div className="gf-crop-actions"><button onClick={() => setCropImage('')}>Отмена</button><button onClick={applyAvatarCrop}>Применить</button></div>
+          <div className="gf-crop-actions"><button onClick={() => setCropImage('')}>РћС‚РјРµРЅР°</button><button onClick={applyAvatarCrop}>РџСЂРёРјРµРЅРёС‚СЊ</button></div>
         </div>
       </div>}
     </main>
@@ -1460,7 +1460,7 @@ function PublicUserPage({ userId }) {
   const [comments, setComments] = useState([]);
   const [forums, setForums] = useState([]);
   const [popular, setPopular] = useState([]);
-  const [status, setStatus] = useState('Загружаем пользователя...');
+  const [status, setStatus] = useState('Р—Р°РіСЂСѓР¶Р°РµРј РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ...');
   const [toast, setToast] = useState('');
 
   useEffect(() => {
@@ -1500,18 +1500,18 @@ function PublicUserPage({ userId }) {
             <img src={profile.avatarUrl || DEFAULT_AVATAR} alt={profile.username} />
             <div>
               <h1>{profile.username}</h1>
-              <p className="gf-user-status"><span className={isOnline ? 'online' : ''}></span>{isOnline ? 'Онлайн' : 'Оффлайн'}</p>
-              <p className="gf-user-bio">{profile.bio || 'Пользователь пока не добавил описание о себе.'}</p>
+              <p className="gf-user-status"><span className={isOnline ? 'online' : ''}></span>{isOnline ? 'РћРЅР»Р°Р№РЅ' : 'РћС„С„Р»Р°Р№РЅ'}</p>
+              <p className="gf-user-bio">{profile.bio || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ РїРѕРєР° РЅРµ РґРѕР±Р°РІРёР» РѕРїРёСЃР°РЅРёРµ Рѕ СЃРµР±Рµ.'}</p>
             </div>
           </div>
           <div className="gf-profile-stats">
-            <div><Icon name="message" /><strong>{topics.length}</strong><span>тем</span></div>
-            <div><Icon name="heart" /><strong>{totalLikes}</strong><span>лайков</span></div>
-            <div><Icon name="eye" /><strong>{totalViews}</strong><span>просмотров</span></div>
+            <div><Icon name="message" /><strong>{topics.length}</strong><span>С‚РµРј</span></div>
+            <div><Icon name="heart" /><strong>{totalLikes}</strong><span>Р»Р°Р№РєРѕРІ</span></div>
+            <div><Icon name="eye" /><strong>{totalViews}</strong><span>РїСЂРѕСЃРјРѕС‚СЂРѕРІ</span></div>
           </div>
         </section>}
         {topics.map((topic) => <TopicCard key={topic.id} topic={topic} onLike={likeTopic} onToast={setToast} onDeleted={(id) => setTopics((items) => items.filter((item) => item.id !== id))} />)}
-        {!status && !topics.length && <div className="gf-state">У пользователя пока нет тем.</div>}
+        {!status && !topics.length && <div className="gf-state">РЈ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ РїРѕРєР° РЅРµС‚ С‚РµРј.</div>}
       </section>
     </main>
   );
@@ -1522,7 +1522,7 @@ function ContentList({ title, items, type }) {
     <strong>{type === 'comment' ? item.topicTitle : (item.title || item.content)}</strong>
     {type === 'comment' && <p>{item.content}</p>}
     <span>{item.forumTitle || item.subtitle || ''}</span>
-  </button>)}{!items.length && <p>Пока пусто.</p>}</div>;
+  </button>)}{!items.length && <p>РџРѕРєР° РїСѓСЃС‚Рѕ.</p>}</div>;
 }
 
 function AdminPanel() {
@@ -1556,7 +1556,7 @@ function AdminPanel() {
     event.preventDefault();
     await fetchJson('/admin/forums', { method: 'POST', body: JSON.stringify(forumForm) });
     setForumForm({ title: '', slug: '' });
-    setStatus('Форум добавлен.');
+    setStatus('Р¤РѕСЂСѓРј РґРѕР±Р°РІР»РµРЅ.');
     await loadAdmin();
   };
 
@@ -1579,41 +1579,41 @@ function AdminPanel() {
     event.preventDefault();
     await fetchJson('/forum/topics', { method: 'POST', body: JSON.stringify({ ...topicForm, forumId: Number(topicForm.forumId), categoryId: Number(topicForm.categoryId) }) });
     setTopicForm((prev) => ({ ...prev, title: '', content: '' }));
-    setStatus('Тема добавлена.');
+    setStatus('РўРµРјР° РґРѕР±Р°РІР»РµРЅР°.');
   };
 
   const createComment = async (event) => {
     event.preventDefault();
     await fetchJson(`/forum/topics/${commentForm.topicId}/comments`, { method: 'POST', body: JSON.stringify({ content: commentForm.content }) });
     setCommentForm({ topicId: '', content: '' });
-    setStatus('Комментарий добавлен.');
+    setStatus('РљРѕРјРјРµРЅС‚Р°СЂРёР№ РґРѕР±Р°РІР»РµРЅ.');
   };
 
   return (
     <div className="gf-admin-panel">
-      <h2>Панель управления</h2>
+      <h2>РџР°РЅРµР»СЊ СѓРїСЂР°РІР»РµРЅРёСЏ</h2>
       <section>
-        <h3>Форумы</h3>
-        <form onSubmit={createForum} className="gf-admin-form"><input value={forumForm.title} onChange={(e) => setForumForm((p) => ({ ...p, title: e.target.value }))} placeholder="Название форума" required /><input value={forumForm.slug} onChange={(e) => setForumForm((p) => ({ ...p, slug: e.target.value }))} placeholder="Slug" /><button>Добавить</button></form>
-        <div className="gf-admin-list">{forums.map((forum) => <div key={forum.id}><strong>{forum.title}</strong><span>{forum.slug}</span><button onClick={() => deleteForum(forum.id)}>Удалить</button></div>)}</div>
+        <h3>Р¤РѕСЂСѓРјС‹</h3>
+        <form onSubmit={createForum} className="gf-admin-form"><input value={forumForm.title} onChange={(e) => setForumForm((p) => ({ ...p, title: e.target.value }))} placeholder="РќР°Р·РІР°РЅРёРµ С„РѕСЂСѓРјР°" required /><input value={forumForm.slug} onChange={(e) => setForumForm((p) => ({ ...p, slug: e.target.value }))} placeholder="Slug" /><button>Р”РѕР±Р°РІРёС‚СЊ</button></form>
+        <div className="gf-admin-list">{forums.map((forum) => <div key={forum.id}><strong>{forum.title}</strong><span>{forum.slug}</span><button onClick={() => deleteForum(forum.id)}>РЈРґР°Р»РёС‚СЊ</button></div>)}</div>
       </section>
       <section>
-        <h3>Пользователи</h3>
-        <div className="gf-admin-list">{users.map((item) => <div key={item.id}><strong>{item.username}</strong><span>{item.email}{item.admin ? ' · админ' : ''}</span><button onClick={() => toggleBlock(item)}>{item.blocked ? 'Разблокировать' : 'Заблокировать'}</button><button onClick={() => deleteUser(item.id)}>Удалить</button></div>)}</div>
+        <h3>РџРѕР»СЊР·РѕРІР°С‚РµР»Рё</h3>
+        <div className="gf-admin-list">{users.map((item) => <div key={item.id}><strong>{item.username}</strong><span>{item.email}{item.admin ? ' В· Р°РґРјРёРЅ' : ''}</span><button onClick={() => toggleBlock(item)}>{item.blocked ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ'}</button><button onClick={() => deleteUser(item.id)}>РЈРґР°Р»РёС‚СЊ</button></div>)}</div>
       </section>
       <section>
-        <h3>Создание контента</h3>
+        <h3>РЎРѕР·РґР°РЅРёРµ РєРѕРЅС‚РµРЅС‚Р°</h3>
         <form onSubmit={createTopic} className="gf-admin-form">
           <select value={topicForm.forumId} onChange={(e) => setTopicForm((p) => ({ ...p, forumId: e.target.value }))}>{forums.map((forum) => <option key={forum.id} value={forum.id}>{forum.title}</option>)}</select>
           <select value={topicForm.categoryId} onChange={(e) => setTopicForm((p) => ({ ...p, categoryId: e.target.value }))}>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
-          <input value={topicForm.title} onChange={(e) => setTopicForm((p) => ({ ...p, title: e.target.value }))} placeholder="Название темы" required />
-          <textarea value={topicForm.content} onChange={(e) => setTopicForm((p) => ({ ...p, content: e.target.value }))} placeholder="Текст темы" required></textarea>
-          <button>Добавить тему</button>
+          <input value={topicForm.title} onChange={(e) => setTopicForm((p) => ({ ...p, title: e.target.value }))} placeholder="РќР°Р·РІР°РЅРёРµ С‚РµРјС‹" required />
+          <textarea value={topicForm.content} onChange={(e) => setTopicForm((p) => ({ ...p, content: e.target.value }))} placeholder="РўРµРєСЃС‚ С‚РµРјС‹" required></textarea>
+          <button>Р”РѕР±Р°РІРёС‚СЊ С‚РµРјСѓ</button>
         </form>
         <form onSubmit={createComment} className="gf-admin-form">
-          <input type="number" value={commentForm.topicId} onChange={(e) => setCommentForm((p) => ({ ...p, topicId: e.target.value }))} placeholder="ID темы" required />
-          <textarea value={commentForm.content} onChange={(e) => setCommentForm((p) => ({ ...p, content: e.target.value }))} placeholder="Комментарий" required></textarea>
-          <button>Добавить комментарий</button>
+          <input type="number" value={commentForm.topicId} onChange={(e) => setCommentForm((p) => ({ ...p, topicId: e.target.value }))} placeholder="ID С‚РµРјС‹" required />
+          <textarea value={commentForm.content} onChange={(e) => setCommentForm((p) => ({ ...p, content: e.target.value }))} placeholder="РљРѕРјРјРµРЅС‚Р°СЂРёР№" required></textarea>
+          <button>Р”РѕР±Р°РІРёС‚СЊ РєРѕРјРјРµРЅС‚Р°СЂРёР№</button>
         </form>
       </section>
       {status && <p className="gf-form-status">{status}</p>}

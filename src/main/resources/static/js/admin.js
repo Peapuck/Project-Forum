@@ -1,9 +1,5 @@
-﻿const ADMIN_API_BASE = window.location.port === '8081'
-  ? `${window.location.origin}/api/admin`
-  : 'http://localhost:8081/api/admin';
-const ADMIN_FORUM_API_BASE = window.location.port === '8081'
-  ? `${window.location.origin}/api/forum`
-  : 'http://localhost:8081/api/forum';
+const ADMIN_API_BASE = '/api/admin';
+const ADMIN_FORUM_API_BASE = '/api/forum';
 
 function adminCurrentUser() {
   try {
@@ -34,7 +30,7 @@ async function adminFetchJson(url, options = {}) {
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || 'Ошибка админ-панели');
+    throw new Error(data.error || 'РћС€РёР±РєР° Р°РґРјРёРЅ-РїР°РЅРµР»Рё');
   }
   return data;
 }
@@ -51,7 +47,7 @@ async function adminFetchNoContent(url, options = {}) {
   });
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(data.error || 'Ошибка админ-панели');
+    throw new Error(data.error || 'РћС€РёР±РєР° Р°РґРјРёРЅ-РїР°РЅРµР»Рё');
   }
 }
 
@@ -61,8 +57,8 @@ async function loadAdminPage() {
   const content = document.getElementById('admin-content');
   const status = document.getElementById('admin-status');
   if (!user?.admin) {
-    if (subtitle) subtitle.textContent = 'Войдите как администратор через страницу логина.';
-    if (content) content.innerHTML = '<p class="forum-empty-state">Доступ запрещен.</p>';
+    if (subtitle) subtitle.textContent = 'Р’РѕР№РґРёС‚Рµ РєР°Рє Р°РґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ С‡РµСЂРµР· СЃС‚СЂР°РЅРёС†Сѓ Р»РѕРіРёРЅР°.';
+    if (content) content.innerHTML = '<p class="forum-empty-state">Р”РѕСЃС‚СѓРї Р·Р°РїСЂРµС‰РµРЅ.</p>';
     return;
   }
 
@@ -91,10 +87,10 @@ async function loadAdminPage() {
       <div class="admin-list-item">
         <div class="admin-list-item-main">
           <strong>${adminEscapeHtml(forum.title)}</strong>
-          <div class="forum-subtitle">ID ${forum.id} · ${adminEscapeHtml(forum.slug)}</div>
+          <div class="forum-subtitle">ID ${forum.id} В· ${adminEscapeHtml(forum.slug)}</div>
         </div>
         <div class="admin-list-item-actions">
-          <button type="button" class="forum-link-btn profile-danger-btn" data-delete-forum="${forum.id}">Удалить</button>
+          <button type="button" class="forum-link-btn profile-danger-btn" data-delete-forum="${forum.id}">РЈРґР°Р»РёС‚СЊ</button>
         </div>
       </div>
     `).join('');
@@ -102,13 +98,13 @@ async function loadAdminPage() {
       <div class="admin-list-item">
         <div class="admin-list-item-main">
           <strong>${adminEscapeHtml(item.username)}</strong>
-          ${item.blocked ? '<span class="restricted-badge">Ограниченный доступ</span>' : ''}
-          ${item.admin ? '<span class="forum-pinned-badge">Админ</span>' : ''}
-          <div class="forum-subtitle">ID ${item.id}${item.email ? ` · ${adminEscapeHtml(item.email)}` : ''}</div>
+          ${item.blocked ? '<span class="restricted-badge">РћРіСЂР°РЅРёС‡РµРЅРЅС‹Р№ РґРѕСЃС‚СѓРї</span>' : ''}
+          ${item.admin ? '<span class="forum-pinned-badge">РђРґРјРёРЅ</span>' : ''}
+          <div class="forum-subtitle">ID ${item.id}${item.email ? ` В· ${adminEscapeHtml(item.email)}` : ''}</div>
         </div>
         <div class="admin-list-item-actions">
-          <button type="button" class="forum-link-btn" data-toggle-block="${item.id}" data-blocked="${item.blocked}">${item.blocked ? 'Разблокировать' : 'Заблокировать'}</button>
-          <button type="button" class="forum-link-btn profile-danger-btn" data-delete-user="${item.id}">Удалить</button>
+          <button type="button" class="forum-link-btn" data-toggle-block="${item.id}" data-blocked="${item.blocked}">${item.blocked ? 'Р Р°Р·Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ' : 'Р—Р°Р±Р»РѕРєРёСЂРѕРІР°С‚СЊ'}</button>
+          <button type="button" class="forum-link-btn profile-danger-btn" data-delete-user="${item.id}">РЈРґР°Р»РёС‚СЊ</button>
         </div>
       </div>
     `).join('');
@@ -137,7 +133,7 @@ async function loadAdminPage() {
         })
       });
       event.target.reset();
-      if (status) status.textContent = 'Форум добавлен.';
+      if (status) status.textContent = 'Р¤РѕСЂСѓРј РґРѕР±Р°РІР»РµРЅ.';
       await reload();
     } catch (error) {
       if (status) status.textContent = error.message;
@@ -161,7 +157,7 @@ async function loadAdminPage() {
         })
       });
       event.target.reset();
-      if (status) status.textContent = 'Тема добавлена.';
+      if (status) status.textContent = 'РўРµРјР° РґРѕР±Р°РІР»РµРЅР°.';
       await reload();
     } catch (error) {
       if (status) status.textContent = error.message;
@@ -179,7 +175,7 @@ async function loadAdminPage() {
         })
       });
       event.target.reset();
-      if (status) status.textContent = 'Комментарий добавлен.';
+      if (status) status.textContent = 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ РґРѕР±Р°РІР»РµРЅ.';
     } catch (error) {
       if (status) status.textContent = error.message;
     }
@@ -202,7 +198,7 @@ async function loadAdminPage() {
       } else {
         return;
       }
-      if (status) status.textContent = 'Изменения сохранены.';
+      if (status) status.textContent = 'РР·РјРµРЅРµРЅРёСЏ СЃРѕС…СЂР°РЅРµРЅС‹.';
       await reload();
     } catch (error) {
       if (status) status.textContent = error.message;
