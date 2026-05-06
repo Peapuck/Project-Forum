@@ -38,6 +38,7 @@ public class AiTopicSummaryService {
     private final String apiKey;
     private final String model;
     private final String ollamaUrl;
+    private final String ollamaApiKey;
 
     public AiTopicSummaryService(
         ForumTopicRepository topicRepository,
@@ -46,7 +47,8 @@ public class AiTopicSummaryService {
         @Value("${ai.provider:ollama}") String provider,
         @Value("${openai.api-key:}") String apiKey,
         @Value("${ai.model:${ollama.model:llama3.1:8b}}") String model,
-        @Value("${ollama.url:http://localhost:11434}") String ollamaUrl
+        @Value("${ollama.url:http://localhost:11434}") String ollamaUrl,
+        @Value("${ollama.api-key:}") String ollamaApiKey
     ) {
         this.topicRepository = topicRepository;
         this.commentRepository = commentRepository;
@@ -54,7 +56,8 @@ public class AiTopicSummaryService {
         this.provider = provider;
         this.apiKey = apiKey;
         this.model = model;
-        this.ollamaUrl = ollamaUrl;
+        this.ollamaUrl = trimTrailingSlash(ollamaUrl);
+        this.ollamaApiKey = ollamaApiKey;
         this.httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(15))
             .build();
@@ -161,11 +164,14 @@ public class AiTopicSummaryService {
             body.put("stream", false);
             body.put("options", Map.of("temperature", 0.2, "num_predict", 900));
 
-            HttpRequest request = HttpRequest.newBuilder(URI.create(ollamaUrl + "/api/generate"))
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(URI.create(ollamaUrl + "/api/generate"))
                 .timeout(Duration.ofMinutes(3))
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)))
-                .build();
+                .POST(HttpRequest.BodyPublishers.ofString(objectMapper.writeValueAsString(body)));
+            if (ollamaApiKey != null && !ollamaApiKey.isBlank()) {
+                requestBuilder.header("Authorization", "Bearer " + ollamaApiKey);
+            }
+            HttpRequest request = requestBuilder.build();
 
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             JsonNode root = objectMapper.readTree(response.body());
@@ -253,5 +259,12 @@ public class AiTopicSummaryService {
 
     private String displayUsername(String username) {
         return username == null || username.isBlank() ? "Пользователь" : username;
+    }
+
+    private String trimTrailingSlash(String value) {
+        if (value == null || value.isBlank()) {
+            return "http://localhost:11434";
+        }
+        return value.endsWith("/") ? value.substring(0, value.length() - 1) : value;
     }
 }
