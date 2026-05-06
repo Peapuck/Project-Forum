@@ -26,7 +26,7 @@ function forumEscapeHtml(value) {
 }
 
 function forumFormatDate(dateString) {
-  if (!dateString) return 'Р”Р°С‚Р° РЅРµ СѓРєР°Р·Р°РЅР°';
+  if (!dateString) return 'Дата не указана';
   return new Date(dateString).toLocaleString('ru-RU', {
     day: '2-digit',
     month: '2-digit',
@@ -49,7 +49,7 @@ async function forumFetchJson(url, options = {}) {
   const response = await fetch(url, { ...options, headers });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || 'РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё РґР°РЅРЅС‹С… С„РѕСЂСѓРјР°');
+    throw new Error(data.error || 'Ошибка загрузки данных форума');
   }
   return data;
 }
@@ -66,16 +66,16 @@ function readAttachmentInput(input) {
       return;
     }
     if (!ALLOWED_ATTACHMENT_TYPES.includes(file.type)) {
-      reject(new Error('РњРѕР¶РЅРѕ РїСЂРёРєСЂРµРїРёС‚СЊ С‚РѕР»СЊРєРѕ png, jpg, webp РёР»Рё webm.'));
+      reject(new Error('Можно прикрепить только png, jpg, webp или webm.'));
       return;
     }
     if (file.size > MAX_ATTACHMENT_SIZE) {
-      reject(new Error('Р¤Р°Р№Р» РЅРµ РґРѕР»Р¶РµРЅ РїСЂРµРІС‹С€Р°С‚СЊ 10 РњР‘.'));
+      reject(new Error('Файл не должен превышать 10 МБ.'));
       return;
     }
     const reader = new FileReader();
     reader.onload = () => resolve({ attachmentUrl: reader.result, attachmentType: file.type });
-    reader.onerror = () => reject(new Error('РќРµ СѓРґР°Р»РѕСЃСЊ РїСЂРѕС‡РёС‚Р°С‚СЊ С„Р°Р№Р».'));
+    reader.onerror = () => reject(new Error('Не удалось прочитать файл.'));
     reader.readAsDataURL(file);
   });
 }
@@ -85,7 +85,7 @@ function renderAttachment(url, type) {
   if (type === 'video/webm') {
     return `<video class="forum-attachment" src="${url}" controls data-media-open="${url}" data-media-type="${type}"></video>`;
   }
-  return `<img class="forum-attachment" src="${url}" alt="Р’Р»РѕР¶РµРЅРёРµ" data-media-open="${url}" data-media-type="${type}" />`;
+  return `<img class="forum-attachment" src="${url}" alt="Вложение" data-media-open="${url}" data-media-type="${type}" />`;
 }
 
 function openMediaViewer(url, type) {
@@ -95,10 +95,10 @@ function openMediaViewer(url, type) {
   viewer.className = 'forum-media-viewer';
   viewer.id = 'forum-media-viewer';
   viewer.innerHTML = `
-    <button type="button" class="forum-media-viewer-close" aria-label="Р—Р°РєСЂС‹С‚СЊ">x</button>
+    <button type="button" class="forum-media-viewer-close" aria-label="Закрыть">x</button>
     ${type === 'video/webm'
       ? `<video src="${url}" controls autoplay></video>`
-      : `<img src="${url}" alt="Р’Р»РѕР¶РµРЅРёРµ" />`}
+      : `<img src="${url}" alt="Вложение" />`}
   `;
   viewer.addEventListener('click', (event) => {
     if (event.target === viewer || event.target.closest('.forum-media-viewer-close')) {
@@ -110,9 +110,9 @@ function openMediaViewer(url, type) {
 
 function renderTopicMetrics(topic) {
   return `
-    <div class="topic-metric"><span class="topic-metric-icon">рџ’¬</span><span>${Number(topic.commentsCount || 0)}</span></div>
+    <div class="topic-metric"><span class="topic-metric-icon">💬</span><span>${Number(topic.commentsCount || 0)}</span></div>
     <div class="topic-metric"><span class="topic-metric-icon">+</span><span>${Number(topic.likesCount || 0)}</span></div>
-    <div class="topic-metric"><span class="topic-metric-icon">рџ‘Ѓ</span><span>${Number(topic.viewsCount || 0)}</span></div>
+    <div class="topic-metric"><span class="topic-metric-icon">👁</span><span>${Number(topic.viewsCount || 0)}</span></div>
   `;
 }
 
@@ -122,7 +122,7 @@ function renderForumCategories(categories, activeCategoryId) {
   const allCount = categories.reduce((sum, item) => sum + Number(item.topicCount || 0), 0);
   list.innerHTML = `
     <button class="forum-category-item ${activeCategoryId ? '' : 'active'}" type="button" data-category-id="">
-      <span>Р’СЃРµ РѕР±СЃСѓР¶РґРµРЅРёСЏ</span>
+      <span>Все обсуждения</span>
       <span>${allCount}</span>
     </button>
     ${categories.map((category) => `
@@ -138,9 +138,9 @@ function renderForumTopics(topics) {
   const list = document.getElementById('forum-topic-list');
   const total = document.getElementById('forum-topic-total');
   if (!list || !total) return;
-  total.textContent = `${topics.length} С‚РµРј`;
+  total.textContent = `${topics.length} тем`;
   if (!topics.length) {
-    list.innerHTML = '<p class="forum-empty-state">Р’ СЌС‚РѕР№ РєР°С‚РµРіРѕСЂРёРё РїРѕРєР° РЅРµС‚ С‚РµРј.</p>';
+    list.innerHTML = '<p class="forum-empty-state">В этой категории пока нет тем.</p>';
     return;
   }
   list.innerHTML = topics.map((topic) => `
@@ -154,9 +154,9 @@ function renderForumTopics(topics) {
         <div class="forum-topic-stats">${renderTopicMetrics(topic)}</div>
       </div>
       <div class="forum-topic-card-meta">
-        <span>РђРІС‚РѕСЂ: ${forumEscapeHtml(topic.username)}</span>
-        <span>РЎРѕР·РґР°РЅРѕ: ${forumFormatDate(topic.createdAt)}</span>
-        <span>РђРєС‚РёРІРЅРѕСЃС‚СЊ: ${forumFormatDate(topic.lastActivityAt)}</span>
+        <span>Автор: ${forumEscapeHtml(topic.username)}</span>
+        <span>Создано: ${forumFormatDate(topic.createdAt)}</span>
+        <span>Активность: ${forumFormatDate(topic.lastActivityAt)}</span>
       </div>
     </a>
   `).join('');
@@ -166,9 +166,9 @@ function renderPopularTopics(topics) {
   const list = document.getElementById('popular-topics-list');
   const count = document.getElementById('popular-topics-count');
   if (!list || !count) return;
-  count.textContent = `${topics.length} С‚РµРј`;
+  count.textContent = `${topics.length} тем`;
   if (!topics.length) {
-    list.innerHTML = '<p class="forum-empty-state">РџРѕРїСѓР»СЏСЂРЅС‹Рµ С‚РµРјС‹ РїРѕРєР° РЅРµ РїРѕСЏРІРёР»РёСЃСЊ.</p>';
+    list.innerHTML = '<p class="forum-empty-state">Популярные темы пока не появились.</p>';
     return;
   }
   list.innerHTML = topics.map((topic) => `
@@ -186,9 +186,9 @@ function renderGuideTopics(topics) {
   const list = document.getElementById('guides-topics-list');
   const count = document.getElementById('guides-topics-count');
   if (!list || !count) return;
-  count.textContent = `${topics.length} С‚РµРј`;
+  count.textContent = `${topics.length} тем`;
   if (!topics.length) {
-    list.innerHTML = '<p class="forum-empty-state">Р’ СЂР°Р·РґРµР»Рµ СЂСѓРєРѕРІРѕРґСЃС‚РІ РїРѕРєР° РЅРµС‚ С‚РµРј.</p>';
+    list.innerHTML = '<p class="forum-empty-state">В разделе руководств пока нет тем.</p>';
     return;
   }
   list.innerHTML = topics.map((topic) => `
@@ -207,16 +207,16 @@ function renderForumForums(forums) {
   const list = document.getElementById('forum-forums-list');
   const total = document.getElementById('forum-forums-total');
   if (!list || !total) return;
-  total.textContent = `${forums.length} С„РѕСЂСѓРј`;
+  total.textContent = `${forums.length} форум`;
   if (!forums.length) {
-    list.innerHTML = '<p class="forum-empty-state">Р¤РѕСЂСѓРјС‹ РЅРµ РЅР°Р№РґРµРЅС‹.</p>';
+    list.innerHTML = '<p class="forum-empty-state">Форумы не найдены.</p>';
     return;
   }
   list.innerHTML = forums.map((forum) => `
     <a class="forum-forum-card" href="forum.html?forumSlug=${encodeURIComponent(forum.slug)}">
-      <span class="forum-forum-card-label">Р¤РѕСЂСѓРј</span>
+      <span class="forum-forum-card-label">Форум</span>
       <strong>${forumEscapeHtml(forum.title)}</strong>
-      <span class="forum-forum-card-meta">РџРµСЂРµР№С‚Рё Рє РѕР±СЃСѓР¶РґРµРЅРёСЏРј, РІРѕРїСЂРѕСЃР°Рј Рё РіР°Р№РґР°Рј</span>
+      <span class="forum-forum-card-meta">Перейти к обсуждениям, вопросам и гайдам</span>
     </a>
   `).join('');
 }
@@ -235,7 +235,7 @@ function renderTopicDetails(topic, currentUserId) {
   card.innerHTML = `
     <div class="forum-topic-header">
       <div class="forum-topic-heading">
-        <p class="forum-eyebrow">${forumEscapeHtml(String(topic.categoryName || 'РўРµРјР° С„РѕСЂСѓРјР°').toUpperCase())}</p>
+        <p class="forum-eyebrow">${forumEscapeHtml(String(topic.categoryName || 'Тема форума').toUpperCase())}</p>
         <h1 class="forum-topic-page-title">${forumEscapeHtml(topic.title)}</h1>
         <p class="forum-subtitle">${forumEscapeHtml(topic.forumTitle)}</p>
       </div>
@@ -244,8 +244,8 @@ function renderTopicDetails(topic, currentUserId) {
           <div class="forum-comment-menu">
             <button type="button" class="forum-icon-btn forum-comment-menu-trigger" data-topic-menu="${topic.id}" aria-expanded="false">...</button>
             <div class="forum-comment-menu-dropdown" data-topic-menu-dropdown="${topic.id}" hidden>
-              ${isOwner ? `<button type="button" class="forum-comment-menu-item" data-topic-edit="${topic.id}">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>` : ''}
-              <button type="button" class="forum-comment-menu-item" data-topic-delete="${topic.id}">РЈРґР°Р»РёС‚СЊ</button>
+              ${isOwner ? `<button type="button" class="forum-comment-menu-item" data-topic-edit="${topic.id}">Редактировать</button>` : ''}
+              <button type="button" class="forum-comment-menu-item" data-topic-delete="${topic.id}">Удалить</button>
             </div>
           </div>
         ` : ''}
@@ -258,12 +258,12 @@ function renderTopicDetails(topic, currentUserId) {
         </a>
         <div>
           <a class="forum-user-link" href="${forumProfileUrl(topic.userId)}"><strong>${forumEscapeHtml(topic.username)}</strong></a>
-          <div class="forum-topic-main-meta">РђРІС‚РѕСЂ С‚РµРјС‹</div>
+          <div class="forum-topic-main-meta">Автор темы</div>
         </div>
       </div>
       <div class="forum-topic-stats">
-        <div>РЎРѕР·РґР°РЅРѕ: ${forumFormatDate(topic.createdAt)}</div>
-        <div>РџРѕСЃР»РµРґРЅСЏСЏ Р°РєС‚РёРІРЅРѕСЃС‚СЊ: ${forumFormatDate(topic.lastActivityAt)}</div>
+        <div>Создано: ${forumFormatDate(topic.createdAt)}</div>
+        <div>Последняя активность: ${forumFormatDate(topic.lastActivityAt)}</div>
       </div>
     </div>
     <div class="forum-topic-main-body">
@@ -271,10 +271,10 @@ function renderTopicDetails(topic, currentUserId) {
       ${renderAttachment(topic.attachmentUrl, topic.attachmentType)}
     </div>
     <div class="forum-topic-main-footer forum-topic-icon-footer">
-      <button type="button" class="forum-comment-icon-action ${topic.likedByCurrentUser ? 'active' : ''}" id="forum-topic-like-btn" aria-label="Р›Р°Р№Рє">+ <span id="forum-topic-like-count">${Number(topic.likesCount || 0)}</span></button>
-      <button type="button" class="forum-comment-icon-action" id="forum-topic-comment-action" aria-label="РљРѕРјРјРµРЅС‚Р°СЂРёР№">рџ’¬ <span>${Number(topic.commentsCount || 0)}</span></button>
+      <button type="button" class="forum-comment-icon-action ${topic.likedByCurrentUser ? 'active' : ''}" id="forum-topic-like-btn" aria-label="Лайк">+ <span id="forum-topic-like-count">${Number(topic.likesCount || 0)}</span></button>
+      <button type="button" class="forum-comment-icon-action" id="forum-topic-comment-action" aria-label="Комментарий">💬 <span>${Number(topic.commentsCount || 0)}</span></button>
       <div class="forum-viewers-wrap">
-        <button type="button" class="forum-comment-icon-action" id="forum-topic-viewers-btn" aria-expanded="false" aria-label="РџСЂРѕСЃРјРѕС‚СЂС‹">рџ‘Ѓ <span>${Number(topic.viewsCount || 0)}</span></button>
+        <button type="button" class="forum-comment-icon-action" id="forum-topic-viewers-btn" aria-expanded="false" aria-label="Просмотры">👁 <span>${Number(topic.viewsCount || 0)}</span></button>
         <div class="forum-viewers-menu" id="forum-topic-viewers-menu" hidden></div>
       </div>
     </div>
@@ -323,7 +323,7 @@ function commentHasPinnedInTree(comment) {
 function renderPinnedBranchPreview(comment, topicAuthorId, depth = 0) {
   const pinnedChildren = (comment.children || []).filter(commentHasPinnedInTree);
   const authorBadge = comment.authorComment
-    ? '<span class="forum-author-badge-label">РђРІС‚РѕСЂ</span>'
+    ? '<span class="forum-author-badge-label">Автор</span>'
     : '';
   return `
     <article class="forum-comment-item forum-pinned-preview-item ${comment.pinned ? 'is-pinned' : ''}" data-comment-depth="${depth}">
@@ -337,11 +337,11 @@ function renderPinnedBranchPreview(comment, topicAuthorId, depth = 0) {
               <a class="forum-user-link" href="${forumProfileUrl(comment.userId)}"><strong>${forumEscapeHtml(comment.username)}</strong></a>
               ${authorBadge}
             </div>
-            <div class="forum-comment-date">${forumFormatDate(comment.createdAt)}${comment.edited ? ' вЂў РёР·РјРµРЅРµРЅРѕ' : ''}</div>
+            <div class="forum-comment-date">${forumFormatDate(comment.createdAt)}${comment.edited ? ' • изменено' : ''}</div>
           </div>
         </div>
         <div class="forum-comment-head-actions">
-          ${comment.pinned ? '<span class="forum-pinned-badge">Р—Р°РєСЂРµРїР»РµРЅРѕ</span>' : ''}
+          ${comment.pinned ? '<span class="forum-pinned-badge">Закреплено</span>' : ''}
         </div>
       </div>
       <p class="forum-comment-content">${forumEscapeHtml(comment.content)}</p>
@@ -357,7 +357,7 @@ function renderPinnedBranchPreview(comment, topicAuthorId, depth = 0) {
 
 function renderSingleComment(comment, topicAuthorId, currentUserId, depth = 0) {
   const authorBadge = comment.authorComment
-    ? '<span class="forum-author-badge-label">РђРІС‚РѕСЂ</span>'
+    ? '<span class="forum-author-badge-label">Автор</span>'
     : '';
   const commentDate = forumFormatDate(comment.createdAt);
   const currentUser = forumCurrentUser();
@@ -374,7 +374,7 @@ function renderSingleComment(comment, topicAuthorId, currentUserId, depth = 0) {
   const repliesCount = visibleChildren.length;
   const childMarkup = visibleChildren.length ? `
     <button type="button" class="forum-text-action forum-branch-toggle" data-branch-toggle="${comment.id}" data-branch-count="${repliesCount}" aria-expanded="false">
-      Р Р°СЃРєСЂС‹С‚СЊ РІРµС‚РєСѓ (${repliesCount})
+      Раскрыть ветку (${repliesCount})
     </button>
     ${pinnedPreviewChildren.length ? `
       <div class="forum-pinned-branch-preview" data-pinned-preview-for="${comment.id}">
@@ -387,7 +387,7 @@ function renderSingleComment(comment, topicAuthorId, currentUserId, depth = 0) {
           ${renderSingleComment(reply, topicAuthorId, currentUserId, depth + 1)}
         </div>
       `).join('')}
-      ${hiddenCount > 0 ? `<button type="button" class="forum-text-action forum-replies-toggle" data-replies-toggle="${comment.id}" aria-expanded="false">РџРѕРєР°Р·Р°С‚СЊ РµС‰С‘ ${hiddenCount}</button>` : ''}
+      ${hiddenCount > 0 ? `<button type="button" class="forum-text-action forum-replies-toggle" data-replies-toggle="${comment.id}" aria-expanded="false">Показать ещё ${hiddenCount}</button>` : ''}
     </div>
   ` : '';
 
@@ -403,17 +403,17 @@ function renderSingleComment(comment, topicAuthorId, currentUserId, depth = 0) {
               <a class="forum-user-link" href="${forumProfileUrl(comment.userId)}"><strong>${forumEscapeHtml(comment.username)}</strong></a>
               ${authorBadge}
             </div>
-            <div class="forum-comment-date">${commentDate}${comment.edited ? ' вЂў РёР·РјРµРЅРµРЅРѕ' : ''}</div>
+            <div class="forum-comment-date">${commentDate}${comment.edited ? ' • изменено' : ''}</div>
           </div>
         </div>
         <div class="forum-comment-head-actions">
-          ${comment.pinned ? '<span class="forum-pinned-badge">Р—Р°РєСЂРµРїР»РµРЅРѕ</span>' : ''}
+          ${comment.pinned ? '<span class="forum-pinned-badge">Закреплено</span>' : ''}
           ${canDelete ? `
             <div class="forum-comment-menu">
               <button type="button" class="forum-icon-btn forum-comment-menu-trigger" data-comment-menu="${comment.id}" aria-expanded="false">...</button>
               <div class="forum-comment-menu-dropdown" data-comment-menu-dropdown="${comment.id}" hidden>
-                ${isOwner ? `<button type="button" class="forum-comment-menu-item" data-comment-edit="${comment.id}">Р РµРґР°РєС‚РёСЂРѕРІР°С‚СЊ</button>` : ''}
-                <button type="button" class="forum-comment-menu-item" data-comment-delete="${comment.id}">РЈРґР°Р»РёС‚СЊ</button>
+                ${isOwner ? `<button type="button" class="forum-comment-menu-item" data-comment-edit="${comment.id}">Редактировать</button>` : ''}
+                <button type="button" class="forum-comment-menu-item" data-comment-delete="${comment.id}">Удалить</button>
               </div>
             </div>
           ` : ''}
@@ -422,9 +422,9 @@ function renderSingleComment(comment, topicAuthorId, currentUserId, depth = 0) {
       <p class="forum-comment-content">${forumEscapeHtml(comment.content)}</p>
       ${renderAttachment(comment.attachmentUrl, comment.attachmentType)}
       <div class="forum-comment-footer">
-        <button type="button" class="forum-comment-icon-action ${comment.likedByCurrentUser ? 'active' : ''}" data-comment-like="${comment.id}" aria-label="Р›Р°Р№Рє">+ <span>${Number(comment.likesCount || 0)}</span></button>
-        <button type="button" class="forum-comment-icon-action" data-comment-reply="${comment.id}" data-comment-username="${forumEscapeHtml(comment.username)}" aria-label="РћС‚РІРµС‚РёС‚СЊ">в†©</button>
-        ${Number(currentUserId) === Number(topicAuthorId) ? `<button type="button" class="forum-comment-icon-action ${comment.pinned ? 'active' : ''}" data-comment-pin="${comment.id}" aria-label="${comment.pinned ? 'РћС‚РєСЂРµРїРёС‚СЊ' : 'Р—Р°РєСЂРµРїРёС‚СЊ'}">${pinIcon}</button>` : ''}
+        <button type="button" class="forum-comment-icon-action ${comment.likedByCurrentUser ? 'active' : ''}" data-comment-like="${comment.id}" aria-label="Лайк">+ <span>${Number(comment.likesCount || 0)}</span></button>
+        <button type="button" class="forum-comment-icon-action" data-comment-reply="${comment.id}" data-comment-username="${forumEscapeHtml(comment.username)}" aria-label="Ответить">↩</button>
+        ${Number(currentUserId) === Number(topicAuthorId) ? `<button type="button" class="forum-comment-icon-action ${comment.pinned ? 'active' : ''}" data-comment-pin="${comment.id}" aria-label="${comment.pinned ? 'Открепить' : 'Закрепить'}">${pinIcon}</button>` : ''}
       </div>
       ${childMarkup}
     </article>
@@ -435,9 +435,9 @@ function renderForumComments(comments, topicAuthorId, currentUserId) {
   const list = document.getElementById('forum-comment-list');
   const total = document.getElementById('forum-comments-total');
   if (!list || !total) return;
-  total.textContent = `${comments.length} РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ`;
+  total.textContent = `${comments.length} комментариев`;
   if (!comments.length) {
-    list.innerHTML = '<p class="forum-empty-state">РџРѕРєР° РЅРµС‚ РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ. РќР°С‡РЅРёС‚Рµ РѕР±СЃСѓР¶РґРµРЅРёРµ РїРµСЂРІС‹Рј.</p>';
+    list.innerHTML = '<p class="forum-empty-state">Пока нет комментариев. Начните обсуждение первым.</p>';
     return;
   }
   const sortMode = document.getElementById('forum-comment-sort')?.value || 'newest';
@@ -477,22 +477,22 @@ async function initForumPage() {
     const sidebar = document.getElementById('forum-category-list');
     const list = document.getElementById('forum-topic-list');
     const newTopicButton = document.getElementById('new-topic-btn');
-    if (title) title.textContent = 'Р’С‹Р±РµСЂРёС‚Рµ С„РѕСЂСѓРј';
-    if (sectionTitle) sectionTitle.textContent = 'РЎРїРёСЃРѕРє С„РѕСЂСѓРјРѕРІ';
-    if (currentFilter) currentFilter.textContent = 'Р’СЃРµ С„РѕСЂСѓРјС‹';
-    if (total) total.textContent = '0 С„РѕСЂСѓРјРѕРІ';
-    if (sidebar) sidebar.innerHTML = '<p class="forum-empty-state">Р’С‹Р±РµСЂРёС‚Рµ С„РѕСЂСѓРјС‹ РёР· СЃРїРёСЃРєР° СЃРїСЂР°РІР°.</p>';
+    if (title) title.textContent = 'Выберите форум';
+    if (sectionTitle) sectionTitle.textContent = 'Список форумов';
+    if (currentFilter) currentFilter.textContent = 'Все форумы';
+    if (total) total.textContent = '0 форумов';
+    if (sidebar) sidebar.innerHTML = '<p class="forum-empty-state">Выберите форумы из списка справа.</p>';
     if (newTopicButton) newTopicButton.hidden = true;
     if (authNotice) authNotice.hidden = true;
     try {
       const forums = await forumFetchJson(`${FORUM_API_BASE}/forums`);
-      if (total) total.textContent = `${forums.length} С„РѕСЂСѓРј`;
+      if (total) total.textContent = `${forums.length} форум`;
       if (list) {
         list.innerHTML = forums.map((forum) => `
           <a class="forum-topic-card-link" href="forum.html?forumSlug=${encodeURIComponent(forum.slug)}">
-            <div class="topic-forum-title">Р¤РѕСЂСѓРјС‹</div>
+            <div class="topic-forum-title">Форумы</div>
             <div class="forum-topic-card-head"><h3>${forumEscapeHtml(forum.title)}</h3></div>
-            <p class="forum-topic-card-excerpt">РћС‚РєСЂС‹С‚СЊ РѕР±СЃСѓР¶РґРµРЅРёСЏ, РІРѕРїСЂРѕСЃС‹ РїРѕ ${forumEscapeHtml(forum.title)}.</p>
+            <p class="forum-topic-card-excerpt">Открыть обсуждения, вопросы по ${forumEscapeHtml(forum.title)}.</p>
           </a>
         `).join('');
       }
@@ -520,7 +520,7 @@ async function initForumPage() {
     let activeCategoryId = params.get('categoryId');
 
     document.title = `${forum.title} | Project Forum`;
-    if (title) title.textContent = `${forum.title}: С„РѕСЂСѓРј`;
+    if (title) title.textContent = `${forum.title}: форум`;
     if (backLink) backLink.href = 'forums.html';
     const categories = await forumFetchJson(`${FORUM_API_BASE}/forums/${forum.id}/categories`);
     if (categorySelect) {
@@ -535,8 +535,8 @@ async function initForumPage() {
       renderForumCategories(categories, activeCategoryId);
       renderForumTopics(topics);
       const activeCategory = categories.find((category) => Number(category.id) === Number(activeCategoryId));
-      if (currentFilter) currentFilter.textContent = activeCategory ? activeCategory.name : 'Р’СЃРµ РєР°С‚РµРіРѕСЂРёРё';
-      if (sectionTitle) sectionTitle.textContent = activeCategory ? activeCategory.name : 'РџРѕСЃР»РµРґРЅРёРµ РѕР±СЃСѓР¶РґРµРЅРёСЏ';
+      if (currentFilter) currentFilter.textContent = activeCategory ? activeCategory.name : 'Все категории';
+      if (sectionTitle) sectionTitle.textContent = activeCategory ? activeCategory.name : 'Последние обсуждения';
     }
 
     await loadTopics();
@@ -569,11 +569,11 @@ async function initForumPage() {
         content: document.getElementById('topic-content')?.value.trim()
       };
       if (!payload.title || !payload.content) {
-        if (topicStatus) topicStatus.textContent = 'Р—Р°РїРѕР»РЅРёС‚Рµ Р·Р°РіРѕР»РѕРІРѕРє Рё РѕРїРёСЃР°РЅРёРµ С‚РµРјС‹.';
+        if (topicStatus) topicStatus.textContent = 'Заполните заголовок и описание темы.';
         return;
       }
       try {
-        if (topicStatus) topicStatus.textContent = 'РџСѓР±Р»РёРєР°С†РёСЏ С‚РµРјС‹...';
+        if (topicStatus) topicStatus.textContent = 'Публикация темы...';
         Object.assign(payload, await readAttachmentInput(document.getElementById('topic-attachment')));
         const createdTopic = await forumFetchJson(`${FORUM_API_BASE}/topics`, { method: 'POST', body: JSON.stringify(payload) });
         window.location.href = `forum_topic.html?topicId=${encodeURIComponent(createdTopic.id)}`;
@@ -584,7 +584,7 @@ async function initForumPage() {
   } catch (error) {
     const list = document.getElementById('forum-topic-list');
     const title = document.getElementById('forum-forum-title');
-    if (title) title.textContent = 'РќРµ СѓРґР°Р»РѕСЃСЊ Р·Р°РіСЂСѓР·РёС‚СЊ С„РѕСЂСѓРј';
+    if (title) title.textContent = 'Не удалось загрузить форум';
     if (list) list.innerHTML = `<p class="forum-empty-state">${forumEscapeHtml(error.message)}</p>`;
   }
 }
@@ -606,7 +606,7 @@ async function initForumTopicPage() {
   const topicCard = document.getElementById('forum-topic-card');
   if (!topicId) {
     const list = document.getElementById('forum-comment-list');
-    if (list) list.innerHTML = '<p class="forum-empty-state">РќРµ РїРµСЂРµРґР°РЅ id С‚РµРјС‹.</p>';
+    if (list) list.innerHTML = '<p class="forum-empty-state">Не передан id темы.</p>';
     return;
   }
 
@@ -631,7 +631,7 @@ async function initForumTopicPage() {
     }
     if (cancelReplyButton) cancelReplyButton.hidden = true;
     const submit = form?.querySelector('button[type="submit"]');
-    if (submit) submit.textContent = 'РћС‚РїСЂР°РІРёС‚СЊ РєРѕРјРјРµРЅС‚Р°СЂРёР№';
+    if (submit) submit.textContent = 'Отправить комментарий';
   }
 
   async function loadTopicPage() {
@@ -659,7 +659,7 @@ async function initForumTopicPage() {
       container.hidden = false;
       if (preview) preview.hidden = true;
       branchToggle.setAttribute('aria-expanded', 'true');
-      branchToggle.textContent = 'РЎРєСЂС‹С‚СЊ РІРµС‚РєСѓ';
+      branchToggle.textContent = 'Скрыть ветку';
     });
     replyIds.forEach((parentId) => {
       const repliesToggle = document.querySelector(`[data-replies-toggle="${parentId}"]`);
@@ -668,13 +668,13 @@ async function initForumTopicPage() {
       if (!repliesToggle) return;
       hiddenReplies.forEach((item) => item.classList.add('reply-expanded'));
       repliesToggle.setAttribute('aria-expanded', 'true');
-      repliesToggle.textContent = 'РЎРІРµСЂРЅСѓС‚СЊ';
+      repliesToggle.textContent = 'Свернуть';
     });
   }
 
   if (!currentUser && authNotice) {
     authNotice.hidden = false;
-    if (status) status.textContent = 'РђРІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РїРёСЃР°С‚СЊ РєРѕРјРјРµРЅС‚Р°СЂРёРё Рё СЃС‚Р°РІРёС‚СЊ Р»Р°Р№РєРё.';
+    if (status) status.textContent = 'Авторизуйтесь, чтобы писать комментарии и ставить лайки.';
   }
 
   commentToggle?.addEventListener('click', () => {
@@ -725,7 +725,7 @@ async function initForumTopicPage() {
     if (topicLikeButton) {
       if (!currentUser?.id) {
         if (authNotice) authNotice.hidden = false;
-        if (status) status.textContent = 'РђРІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РїРѕСЃС‚Р°РІРёС‚СЊ Р»Р°Р№Рє.';
+        if (status) status.textContent = 'Авторизуйтесь, чтобы поставить лайк.';
         return;
       }
       try {
@@ -739,7 +739,7 @@ async function initForumTopicPage() {
     if (topicCommentButton) {
       if (!currentUser?.id) {
         if (authNotice) authNotice.hidden = false;
-        if (status) status.textContent = 'РђРІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РЅР°РїРёСЃР°С‚СЊ РєРѕРјРјРµРЅС‚Р°СЂРёР№.';
+        if (status) status.textContent = 'Авторизуйтесь, чтобы написать комментарий.';
         return;
       }
       if (form && !form.hidden && !editingCommentId && !parentCommentInput?.value) {
@@ -763,18 +763,18 @@ async function initForumTopicPage() {
       menu.hidden = !willOpen;
       topicViewersButton.setAttribute('aria-expanded', String(willOpen));
       if (willOpen && !menu.dataset.loaded) {
-        menu.innerHTML = '<p>Р—Р°РіСЂСѓР·РєР°...</p>';
+        menu.innerHTML = '<p>Загрузка...</p>';
         try {
           const viewers = await forumFetchJson(`${FORUM_API_BASE}/topics/${topicId}/viewers`);
           menu.dataset.loaded = 'true';
           menu.innerHTML = viewers.length
             ? viewers.map((viewer) => `
               <a href="${forumProfileUrl(viewer.id)}">
-                <img src="${viewer.avatarUrl || DEFAULT_AVATAR}" alt="${forumEscapeHtml(viewer.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ')}" />
-                <span>${forumEscapeHtml(viewer.username || 'РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ')}</span>
+                <img src="${viewer.avatarUrl || DEFAULT_AVATAR}" alt="${forumEscapeHtml(viewer.username || 'Пользователь')}" />
+                <span>${forumEscapeHtml(viewer.username || 'Пользователь')}</span>
               </a>
             `).join('')
-            : '<p>РџРѕРєР° РЅРµС‚ РїСЂРѕСЃРјРѕС‚СЂРѕРІ.</p>';
+            : '<p>Пока нет просмотров.</p>';
         } catch (error) {
           menu.innerHTML = `<p>${forumEscapeHtml(error.message)}</p>`;
         }
@@ -782,9 +782,9 @@ async function initForumTopicPage() {
       return;
     }
     if (topicEditButton && currentTopic) {
-      const nextTitle = window.prompt('РќРѕРІС‹Р№ Р·Р°РіРѕР»РѕРІРѕРє С‚РµРјС‹:', currentTopic.title);
+      const nextTitle = window.prompt('Новый заголовок темы:', currentTopic.title);
       if (nextTitle === null) return;
-      const nextContent = window.prompt('РќРѕРІС‹Р№ С‚РµРєСЃС‚ С‚РµРјС‹:', currentTopic.content);
+      const nextContent = window.prompt('Новый текст темы:', currentTopic.content);
       if (nextContent === null) return;
       try {
         await forumFetchJson(`${FORUM_API_BASE}/topics/${topicId}`, {
@@ -799,7 +799,7 @@ async function initForumTopicPage() {
       return;
     }
     if (topicDeleteButton && currentTopic) {
-      if (!window.confirm('РЈРґР°Р»РёС‚СЊ СЌС‚Сѓ С‚РµРјСѓ?')) return;
+      if (!window.confirm('Удалить эту тему?')) return;
       try {
         await forumFetchJson(`${FORUM_API_BASE}/topics/${topicId}`, { method: 'DELETE' });
         window.location.href = `forum.html?forumSlug=${encodeURIComponent(currentTopic.forumSlug)}&categoryId=${encodeURIComponent(currentTopic.categoryId)}`;
@@ -853,7 +853,7 @@ async function initForumTopicPage() {
       if (preview) preview.hidden = !expanded;
       branchToggle.setAttribute('aria-expanded', String(!expanded));
       const repliesCount = Number(branchToggle.dataset.branchCount || 0);
-      branchToggle.textContent = expanded ? `Р Р°СЃРєСЂС‹С‚СЊ РІРµС‚РєСѓ (${repliesCount})` : 'РЎРєСЂС‹С‚СЊ РІРµС‚РєСѓ';
+      branchToggle.textContent = expanded ? `Раскрыть ветку (${repliesCount})` : 'Скрыть ветку';
       return;
     }
 
@@ -864,21 +864,21 @@ async function initForumTopicPage() {
       const expanded = repliesToggle.getAttribute('aria-expanded') === 'true';
       hiddenReplies.forEach((item) => item.classList.toggle('reply-expanded', !expanded));
       repliesToggle.setAttribute('aria-expanded', String(!expanded));
-      repliesToggle.textContent = expanded ? `РџРѕРєР°Р·Р°С‚СЊ РµС‰С‘ ${hiddenReplies.length}` : 'РЎРІРµСЂРЅСѓС‚СЊ';
+      repliesToggle.textContent = expanded ? `Показать ещё ${hiddenReplies.length}` : 'Свернуть';
       return;
     }
 
     if (replyButton) {
       if (!currentUser?.id) {
         if (authNotice) authNotice.hidden = false;
-        if (status) status.textContent = 'РђРІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РѕС‚РІРµС‚РёС‚СЊ РЅР° РєРѕРјРјРµРЅС‚Р°СЂРёР№.';
+        if (status) status.textContent = 'Авторизуйтесь, чтобы ответить на комментарий.';
         return;
       }
       resetReplyState();
       if (parentCommentInput) parentCommentInput.value = replyButton.dataset.commentReply;
       if (replyTarget) {
         replyTarget.hidden = false;
-        replyTarget.textContent = `РћС‚РІРµС‚ РїРѕР»СЊР·РѕРІР°С‚РµР»СЋ ${replyButton.dataset.commentUsername}`;
+        replyTarget.textContent = `Ответ пользователю ${replyButton.dataset.commentUsername}`;
       }
       if (cancelReplyButton) cancelReplyButton.hidden = false;
       if (form) form.hidden = false;
@@ -890,7 +890,7 @@ async function initForumTopicPage() {
     if (likeCommentButton) {
       if (!currentUser?.id) {
         if (authNotice) authNotice.hidden = false;
-        if (status) status.textContent = 'РђРІС‚РѕСЂРёР·СѓР№С‚РµСЃСЊ, С‡С‚РѕР±С‹ РїРѕСЃС‚Р°РІРёС‚СЊ Р»Р°Р№Рє.';
+        if (status) status.textContent = 'Авторизуйтесь, чтобы поставить лайк.';
         return;
       }
       try {
@@ -910,11 +910,11 @@ async function initForumTopicPage() {
         commentInput.value = contentNode.textContent.trim();
         if (replyTarget) {
           replyTarget.hidden = false;
-          replyTarget.textContent = 'Р РµРґР°РєС‚РёСЂРѕРІР°РЅРёРµ РєРѕРјРјРµРЅС‚Р°СЂРёСЏ';
+          replyTarget.textContent = 'Редактирование комментария';
         }
         if (cancelReplyButton) cancelReplyButton.hidden = false;
         const submit = form?.querySelector('button[type="submit"]');
-        if (submit) submit.textContent = 'РЎРѕС…СЂР°РЅРёС‚СЊ РёР·РјРµРЅРµРЅРёСЏ';
+        if (submit) submit.textContent = 'Сохранить изменения';
         if (form) form.hidden = false;
         commentToggle?.setAttribute('aria-expanded', 'true');
         commentInput.focus();
@@ -938,11 +938,11 @@ async function initForumTopicPage() {
     event.preventDefault();
     const content = commentInput?.value.trim();
     if (!content) {
-      if (status) status.textContent = 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ РЅРµ РјРѕР¶РµС‚ Р±С‹С‚СЊ РїСѓСЃС‚С‹Рј.';
+      if (status) status.textContent = 'Комментарий не может быть пустым.';
       return;
     }
     try {
-      if (status) status.textContent = editingCommentId ? 'РЎРѕС…СЂР°РЅСЏРµРј РєРѕРјРјРµРЅС‚Р°СЂРёР№...' : 'РћС‚РїСЂР°РІРєР° РєРѕРјРјРµРЅС‚Р°СЂРёСЏ...';
+      if (status) status.textContent = editingCommentId ? 'Сохраняем комментарий...' : 'Отправка комментария...';
       const attachment = await readAttachmentInput(document.getElementById('forum-comment-attachment'));
       if (editingCommentId) {
         await forumFetchJson(`${FORUM_API_BASE}/comments/${editingCommentId}`, {
@@ -966,7 +966,7 @@ async function initForumTopicPage() {
       resetReplyState();
       if (form) form.hidden = true;
       commentToggle?.setAttribute('aria-expanded', 'false');
-      if (status) status.textContent = wasEditing ? 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ РѕР±РЅРѕРІР»С‘РЅ.' : 'РљРѕРјРјРµРЅС‚Р°СЂРёР№ РѕРїСѓР±Р»РёРєРѕРІР°РЅ.';
+      if (status) status.textContent = wasEditing ? 'Комментарий обновлён.' : 'Комментарий опубликован.';
       await loadTopicPage();
     } catch (error) {
       if (status) status.textContent = error.message;
@@ -979,7 +979,7 @@ async function initMyMessagesPage() {
   const user = forumCurrentUser();
   const subtitle = document.getElementById('my-messages-subtitle');
   if (!user?.id) {
-    if (subtitle) subtitle.textContent = 'Р’РѕР№РґРёС‚Рµ РІ Р°РєРєР°СѓРЅС‚, С‡С‚РѕР±С‹ РїРѕСЃРјРѕС‚СЂРµС‚СЊ СЃРІРѕРё С‚РµРјС‹ Рё РєРѕРјРјРµРЅС‚Р°СЂРёРё.';
+    if (subtitle) subtitle.textContent = 'Войдите в аккаунт, чтобы посмотреть свои темы и комментарии.';
     return;
   }
   try {
@@ -987,13 +987,13 @@ async function initMyMessagesPage() {
       forumFetchJson(`${FORUM_API_BASE}/users/${user.id}/topics`),
       forumFetchJson(`${FORUM_API_BASE}/users/${user.id}/comments`)
     ]);
-    if (subtitle) subtitle.textContent = `РџРѕР»СЊР·РѕРІР°С‚РµР»СЊ: ${user.username}`;
+    if (subtitle) subtitle.textContent = `Пользователь: ${user.username}`;
     const topicsList = document.getElementById('my-topics-list');
     const commentsList = document.getElementById('my-comments-list');
     const topicsCount = document.getElementById('my-topics-count');
     const commentsCount = document.getElementById('my-comments-count');
-    if (topicsCount) topicsCount.textContent = `${topics.length} С‚РµРј`;
-    if (commentsCount) commentsCount.textContent = `${comments.length} РєРѕРјРјРµРЅС‚Р°СЂРёРµРІ`;
+    if (topicsCount) topicsCount.textContent = `${topics.length} тем`;
+    if (commentsCount) commentsCount.textContent = `${comments.length} комментариев`;
     if (topicsList) topicsList.innerHTML = topics.map((topic) => `
       <a class="forum-topic-card-link" href="forum_topic.html?topicId=${encodeURIComponent(topic.id)}">
         <div class="forum-topic-card-head">
@@ -1010,7 +1010,7 @@ async function initMyMessagesPage() {
           <div class="forum-comment-date">${forumFormatDate(comment.createdAt)}</div>
         </div>
         <p class="forum-comment-content">${forumEscapeHtml(comment.content)}</p>
-        <a class="forum-link-btn" style="margin-top:12px;" href="forum_topic.html?topicId=${encodeURIComponent(comment.topicId)}">РћС‚РєСЂС‹С‚СЊ С‚РµРјСѓ</a>
+        <a class="forum-link-btn" style="margin-top:12px;" href="forum_topic.html?topicId=${encodeURIComponent(comment.topicId)}">Открыть тему</a>
       </article>
     `).join('');
   } catch (error) {
