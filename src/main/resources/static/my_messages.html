@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Мои сообщения | Project Forum</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <header class="site-header" id="site-header"></header>
+
+    <main class="forum-page">
+      <section class="forum-shell">
+        <div class="forum-topbar">
+          <div>
+            <p class="forum-eyebrow">МОИ СООБЩЕНИЯ</p>
+            <h1>Темы и комментарии пользователя</h1>
+            <p class="forum-subtitle" id="my-messages-subtitle">Загрузка пользовательской активности.</p>
+          </div>
+        </div>
+
+        <section class="forum-content-card">
+          <div class="forum-content-head">
+            <h2>Мои темы</h2>
+            <span id="my-topics-count">0</span>
+          </div>
+          <div class="forum-topic-list" id="my-topics-list"></div>
+        </section>
+
+        <section class="forum-comments-card" style="margin-top: 24px;">
+          <div class="forum-content-head">
+            <h2>Мои комментарии</h2>
+            <span id="my-comments-count">0</span>
+          </div>
+          <div class="forum-comment-list" id="my-comments-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="js/header.js"></script>
+    <script src="js/forum.js"></script>
+  </body>
+</html>
+

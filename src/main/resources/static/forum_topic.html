@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Тема форума | Project Forum</title>
+    <link rel="stylesheet" href="css/app.css?v=20260505-8" />
+  </head>
+  <body>
+    <header class="site-header" id="site-header"></header>
+
+    <main class="forum-page">
+      <section class="forum-shell forum-topic-shell">
+        <div class="forum-topic-layout">
+          <aside class="forum-topic-sideback">
+            <a class="forum-back-icon" id="forum-back-to-forum" href="forums.html" aria-label="Назад">
+              <svg viewBox="0 0 24 24" aria-hidden="true" class="forum-back-icon-svg">
+                <path d="M14.5 5.5L8 12l6.5 6.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </a>
+          </aside>
+          <article class="forum-topic-card forum-topic-card-merged" id="forum-topic-card"></article>
+        </div>
+
+        <section class="forum-comments-card">
+          <div class="forum-content-head forum-comments-head">
+            <div>
+              <h2>Комментарии</h2>
+              <span id="forum-comments-total">0 комментариев</span>
+            </div>
+            <div class="forum-comments-toolbar">
+              <label class="forum-inline-field forum-sort-field" for="forum-comment-sort">
+                <span>Сортировка</span>
+                <select id="forum-comment-sort">
+                  <option value="newest">Сначала новые</option>
+                  <option value="likes">Сначала популярные</option>
+                </select>
+              </label>
+              <button type="button" class="forum-primary-btn forum-write-comment-btn" id="forum-comment-toggle-btn" aria-expanded="false" aria-controls="forum-comment-form">Написать комментарий</button>
+            </div>
+          </div>
+
+          <div class="forum-notice" id="forum-comment-auth-notice" hidden>
+            Чтобы написать комментарий, войдите в аккаунт.
+          </div>
+
+          <form id="forum-comment-form" class="forum-form forum-comment-form" hidden>
+            <input id="forum-comment-parent-id" type="hidden" />
+            <label for="forum-comment-content">Новый комментарий</label>
+            <textarea id="forum-comment-content" rows="6" maxlength="5000" required placeholder="Напишите комментарий по теме"></textarea>
+            <label for="forum-comment-attachment">Картинка</label>
+            <input id="forum-comment-attachment" type="file" accept="image/png,image/jpeg,image/webp,video/webm" />
+            <div class="forum-reply-target" id="forum-reply-target" hidden></div>
+            <p class="forum-form-status" id="forum-comment-status"></p>
+            <div class="forum-form-actions">
+              <button type="submit" class="forum-primary-btn">Отправить комментарий</button>
+              <button type="button" class="forum-link-btn" id="forum-comment-cancel-reply" hidden>Отменить</button>
+            </div>
+          </form>
+          <div class="forum-comment-list" id="forum-comment-list"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="js/header.js"></script>
+    <script src="js/forum.js"></script>
+  </body>
+</html>
+

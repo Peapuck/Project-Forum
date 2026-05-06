@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Панель админа | Project Forum</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <header class="site-header" id="site-header"></header>
+    <main class="forum-page">
+      <section class="forum-shell">
+        <div class="forum-topbar">
+          <div>
+            <p class="forum-eyebrow">АДМИН</p>
+            <h1>Панель управления форумом</h1>
+            <p class="forum-subtitle" id="admin-subtitle">Управление форумами, контентом и пользователями.</p>
+          </div>
+        </div>
+
+        <div class="admin-grid" id="admin-content">
+          <section class="forum-content-card">
+            <div class="forum-content-head">
+              <h2>Форум</h2>
+              <span id="admin-forums-count">0</span>
+            </div>
+            <form class="forum-form" id="admin-forum-form">
+              <label for="admin-forum-title">Название</label>
+              <input id="admin-forum-title" type="text" maxlength="200" required />
+              <label for="admin-forum-slug">Slug</label>
+              <input id="admin-forum-slug" type="text" maxlength="120" placeholder="Необязательно" />
+              <button type="submit" class="forum-primary-btn">Добавить форум</button>
+            </form>
+            <div class="admin-list" id="admin-forums-list" style="margin-top:16px;"></div>
+          </section>
+
+          <section class="forum-content-card">
+            <div class="forum-content-head">
+              <h2>Пользователи</h2>
+              <span id="admin-users-count">0</span>
+            </div>
+            <div class="admin-list" id="admin-users-list"></div>
+          </section>
+
+          <section class="forum-content-card">
+            <div class="forum-content-head">
+              <h2>Создание контента</h2>
+            </div>
+            <form class="forum-form" id="admin-create-topic-form">
+              <label for="admin-topic-forum">Форум</label>
+              <select id="admin-topic-forum" required></select>
+              <label for="admin-topic-category">Раздел</label>
+              <select id="admin-topic-category" required></select>
+              <label for="admin-topic-title">Название темы</label>
+              <input id="admin-topic-title" type="text" maxlength="200" required />
+              <label for="admin-topic-content">Текст темы</label>
+              <textarea id="admin-topic-content" maxlength="10000" required></textarea>
+              <button type="submit" class="forum-primary-btn">Добавить тему</button>
+            </form>
+            <hr class="profile-divider" />
+            <form class="forum-form" id="admin-create-comment-form">
+              <label for="admin-comment-topic-id">ID темы</label>
+              <input id="admin-comment-topic-id" type="number" min="1" required />
+              <label for="admin-comment-content">Комментарий</label>
+              <textarea id="admin-comment-content" maxlength="5000" required></textarea>
+              <button type="submit" class="forum-primary-btn">Добавить комментарий</button>
+            </form>
+            <p class="forum-form-status" id="admin-status"></p>
+          </section>
+        </div>
+      </section>
+    </main>
+    <script src="js/header.js"></script>
+    <script src="js/admin.js"></script>
+  </body>
+</html>
+

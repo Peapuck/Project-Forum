@@ -1,0 +1,32 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Войти | Project Forum</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <form class="auth-card" id="login-form">
+        <div>
+          <div class="auth-mark"></div>
+          <h1>Вход</h1>
+        </div>
+        <input id="login-email" type="email" placeholder="Email" autocomplete="email" required />
+        <div class="auth-password">
+          <input id="login-password" type="password" placeholder="Пароль" autocomplete="current-password" required />
+          <button type="button" data-password-toggle="login-password" aria-label="Показать пароль" aria-pressed="false"></button>
+        </div>
+        <button class="auth-submit" type="submit">Войти</button>
+        <a class="auth-muted" href="index.html">Вернуться на главную</a>
+        <p>Нет аккаунта?</p>
+        <a class="auth-secondary" href="register.html">Создать аккаунт</a>
+        <div class="auth-status" id="login-status"></div>
+      </form>
+    </main>
+
+    <script src="js/auth.js"></script>
+  </body>
+</html>
+

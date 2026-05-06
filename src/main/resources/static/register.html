@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Регистрация | Project Forum</title>
+    <link rel="stylesheet" href="css/app.css" />
+  </head>
+  <body>
+    <main class="auth-page">
+      <form class="auth-card" id="register-form">
+        <div>
+          <div class="auth-mark"></div>
+          <h1>Регистрация</h1>
+        </div>
+        <input id="register-username" type="text" placeholder="Ник пользователя" autocomplete="username" maxlength="100" required />
+        <input id="register-email" type="email" placeholder="Email" autocomplete="email" required />
+        <div class="auth-password">
+          <input id="register-password" type="password" placeholder="Пароль" autocomplete="new-password" minlength="4" required />
+          <button type="button" data-password-toggle="register-password" aria-label="Показать пароль" aria-pressed="false"></button>
+        </div>
+        <div class="auth-password">
+          <input id="register-password-repeat" type="password" placeholder="Повторите пароль" autocomplete="new-password" minlength="4" required />
+          <button type="button" data-password-toggle="register-password-repeat" aria-label="Показать повтор пароля" aria-pressed="false"></button>
+        </div>
+        <button class="auth-submit" type="submit">Создать аккаунт</button>
+        <a class="auth-muted" href="index.html">Вернуться на главную</a>
+        <p>Уже есть аккаунт?</p>
+        <a class="auth-secondary" href="login.html">Войти</a>
+        <div class="auth-status" id="register-status"></div>
+      </form>
+    </main>
+    <script src="js/auth.js"></script>
+  </body>
+</html>
+
